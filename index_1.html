@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rugby Analytics — 分析ハブ</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  color-scheme: light;
+  --page:#f9f9f7; --surface:#fcfcfb;
+  --ink-1:#0b0b0b; --ink-2:#52514e; --ink-muted:#898781;
+  --border:rgba(11,11,11,0.10); --accent:#2a78d6; --radius:10px; --chip:#eef2f6;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --page:#0d0d0d; --surface:#1a1a19;
+    --ink-1:#ffffff; --ink-2:#c3c2b7; --ink-muted:#898781;
+    --border:rgba(255,255,255,0.10); --accent:#3987e5; --chip:#26262a;
+  }
+}
+body { font-family: system-ui, -apple-system, "Segoe UI", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+  background:var(--page); color:var(--ink-1); line-height:1.6; }
+.topnav{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+  background:var(--surface);border-bottom:1px solid var(--border);padding:10px 18px;}
+.topnav .brand{font-weight:700;font-size:15px;color:var(--ink-1);text-decoration:none;white-space:nowrap;}
+.topnav .navlinks{display:flex;gap:4px;flex-wrap:wrap;}
+.topnav .navlinks a{font-size:13px;color:var(--ink-2);text-decoration:none;padding:6px 12px;border-radius:6px;white-space:nowrap;}
+.topnav .navlinks a:hover{background:color-mix(in srgb,var(--ink-1) 7%,transparent);}
+.topnav .navlinks a.active{background:#2a78d6;color:#fff;}
+.topnav .spacer{flex:1;}
+#lang-toggle{font-size:12px;font-weight:600;color:var(--ink-2);background:var(--surface);border:1px solid var(--border);
+  border-radius:6px;padding:5px 11px;cursor:pointer;white-space:nowrap;}
+#lang-toggle:hover{background:color-mix(in srgb,var(--ink-1) 7%,transparent);}
+.wrap { max-width:1100px; margin:0 auto; padding:34px 20px 48px; }
+.hero h1 { font-size:30px; font-weight:750; letter-spacing:.2px; }
+.hero p { color:var(--ink-2); margin-top:8px; max-width:680px; font-size:14.5px; }
+.stats { display:flex; gap:26px; flex-wrap:wrap; margin:22px 0 4px; }
+.stat .n { font-size:26px; font-weight:700; }
+.stat .l { font-size:12px; color:var(--ink-muted); }
+.sec-h { font-size:13px; font-weight:700; color:var(--ink-muted); text-transform:uppercase; letter-spacing:.6px; margin:30px 0 12px; }
+.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:16px; }
+.tile { display:flex; flex-direction:column; text-decoration:none; color:inherit; background:var(--surface);
+  border:1px solid var(--border); border-radius:var(--radius); padding:20px 22px; transition:transform .08s, box-shadow .12s, border-color .12s; }
+a.tile:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,0,0,0.10); border-color:var(--accent); }
+.tile .top { display:flex; align-items:center; gap:10px; }
+.tile .ico { font-size:22px; }
+.tile h2 { font-size:16px; font-weight:650; display:flex; align-items:center; gap:8px; }
+.tile .arrow { margin-left:auto; color:var(--ink-muted); font-size:18px; }
+.tile p { font-size:12.5px; color:var(--ink-2); margin:8px 0 12px; }
+.chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:auto; }
+.chip { font-size:11px; color:var(--ink-2); background:var(--chip); border-radius:20px; padding:3px 9px; white-space:nowrap; }
+.badge { font-size:10.5px; padding:2px 7px; border-radius:20px; font-weight:600;
+  background:color-mix(in srgb,var(--accent) 16%,transparent); color:var(--accent); }
+.note { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px 18px; margin-top:16px; font-size:12.5px; color:var(--ink-2); }
+.note b { color:var(--ink-1); }
+footer { margin-top:28px; font-size:12px; color:var(--ink-muted); border-top:1px solid var(--border); padding-top:16px; }
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <a class="brand" href="index.html">🏉 Rugby Analytics</a>
+  <div class="navlinks">
+    <a href="index.html" class="active" id="nav-home">ホーム</a>
+    <a href="kick.html" id="nav-kick">キック</a>
+    <a href="attack.html" id="nav-attack">アタック</a>
+    <a href="defense.html" id="nav-defense">ディフェンス</a>
+    <a href="setpiece.html" id="nav-setpiece">FWセットプレー</a>
+  </div>
+  <span class="spacer"></span>
+  <button id="lang-toggle" type="button">EN</button>
+</nav>
+<div class="wrap">
+  <div class="hero">
+    <h1>Rugby Analytics</h1>
+    <p id="hero-p">Opta (Stats Perform) BIイベントデータをもとにした分析ダッシュボード集。7コンペティション・1,493試合(2024〜2026シーズン)を横断し、局面ごとの傾向を「1試合平均」で比較できます。集計定義は Power BI のメジャーに整合しています。</p>
+    <div class="stats">
+      <div class="stat"><div class="n">7</div><div class="l" id="stat-comp-l">コンペティション</div></div>
+      <div class="stat"><div class="n">1,493</div><div class="l" id="stat-match-l">試合</div></div>
+      <div class="stat"><div class="n">3</div><div class="l" id="stat-season-l">シーズン (2024–26)</div></div>
+      <div class="stat"><div class="n">78</div><div class="l" id="stat-team-l">チーム</div></div>
+    </div>
+  </div>
+
+  <div class="sec-h" id="sec-h">分析ページ</div>
+  <div class="grid">
+    <a class="tile" href="kick.html">
+      <div class="top"><span class="ico">🎯</span><h2 id="t-kick-h2">キック</h2><span class="badge" id="t-kick-badge">公開中</span><span class="arrow">→</span></div>
+      <p id="t-kick-p">コンテストキック(Box / Bomb)26,756本の結果分析。空中戦をどれだけ支配できているかをチーム別・選手別に。</p>
+      <div class="chips" id="t-kick-chips"></div>
+    </a>
+    <a class="tile" href="attack.html">
+      <div class="top"><span class="ico">⚡</span><h2 id="t-attack-h2">アタック</h2><span class="badge" id="t-attack-badge">公開中</span><span class="arrow">→</span></div>
+      <p id="t-attack-p">ボールキャリーからの前進・崩しの指標。指標を選ぶとチーム別ランキングとリーグ比較が切り替わります。</p>
+      <div class="chips" id="t-attack-chips"></div>
+    </a>
+    <a class="tile" href="defense.html">
+      <div class="top"><span class="ico">🛡️</span><h2 id="t-defense-h2">ディフェンス</h2><span class="badge" id="t-defense-badge">公開中</span><span class="arrow">→</span></div>
+      <p id="t-defense-p">タックルとブレイクダウンの守備指標。タックル成功率はMissed/Ineffectiveを除く定義。チーム別・選手別。</p>
+      <div class="chips" id="t-defense-chips"></div>
+    </a>
+    <a class="tile" href="setpiece.html">
+      <div class="top"><span class="ico">🏉</span><h2 id="t-setpiece-h2">FWセットプレー</h2><span class="badge" id="t-setpiece-badge">公開中</span><span class="arrow">→</span></div>
+      <p id="t-setpiece-p">スクラム・ラインアウト・モールのセットピース指標。パック(チーム)単位で比較します。</p>
+      <div class="chips" id="t-setpiece-chips"></div>
+    </a>
+  </div>
+
+  <div class="note" id="note-box">
+    <b>使い方.</b> 各ページ上部のフィルタ(コンペティション / シーズン / ラウンド / チーム)で対象を絞り込み、「チャート指標」で見たい数字に切り替えます。数量は<b>1試合平均</b>、率は<b>合計÷合計</b>で算出。ページ間は上部メニューでいつでも行き来できます。各指標の正確な定義は、各ページ下部のフッターに記載しています。
+  </div>
+
+  <footer id="page-footer">
+    データ: Opta (Stats Perform) BIイベントデータ(Security Level 2 - Restricted)。集計定義は Power BI メジャーに整合。取り扱いには元データのライセンス条件が適用されます。
+  </footer>
+</div>
+<script>
+const I18N = {
+  ja:{
+    doctitle:'Rugby Analytics — 分析ハブ',
+    nav_home:'ホーム', nav_kick:'キック', nav_attack:'アタック', nav_defense:'ディフェンス', nav_setpiece:'FWセットプレー',
+    hero_p:'Opta (Stats Perform) BIイベントデータをもとにした分析ダッシュボード集。7コンペティション・1,493試合(2024〜2026シーズン)を横断し、局面ごとの傾向を「1試合平均」で比較できます。集計定義は Power BI のメジャーに整合しています。',
+    stat_comp:'コンペティション', stat_match:'試合', stat_season:'シーズン (2024–26)', stat_team:'チーム',
+    sec_h:'分析ページ', badge:'公開中', lang_btn:'EN',
+    tiles:{
+      kick:{h2:'キック', p:'コンテストキック(Box / Bomb)26,756本の結果分析。空中戦をどれだけ支配できているかをチーム別・選手別に。',
+        chips:['再獲得','相手エラー誘発','確保失敗','相手確保','タッチ','実効勝率']},
+      attack:{h2:'アタック', p:'ボールキャリーからの前進・崩しの指標。指標を選ぶとチーム別ランキングとリーグ比較が切り替わります。',
+        chips:['キャリー/試合','獲得m(Distance+)','平均ゲイン','ゲインライン突破率','ドミナント率','ディフェンダー突破','ラインブレイク','オフロード成功率','22m侵入→得点率','トライ']},
+      defense:{h2:'ディフェンス', p:'タックルとブレイクダウンの守備指標。タックル成功率はMissed/Ineffectiveを除く定義。チーム別・選手別。',
+        chips:['タックル/試合','タックル成功率','ドミナント率','ミスタックル','ジャッカル(成功率)','タックルTO獲得','被ターンオーバー']},
+      setpiece:{h2:'FWセットプレー', p:'スクラム・ラインアウト・モールのセットピース指標。パック(チーム)単位で比較します。',
+        chips:['スクラム成功率','ラインアウト成功率','ラインアウトスティール','モール成功率','モールトライ','スクラムPK獲得']}
+    },
+    note_html:'<b>使い方.</b> 各ページ上部のフィルタ(コンペティション / シーズン / ラウンド / チーム)で対象を絞り込み、「チャート指標」で見たい数字に切り替えます。数量は<b>1試合平均</b>、率は<b>合計÷合計</b>で算出。ページ間は上部メニューでいつでも行き来できます。各指標の正確な定義は、各ページ下部のフッターに記載しています。',
+    footer:'データ: Opta (Stats Perform) BIイベントデータ(Security Level 2 - Restricted)。集計定義は Power BI メジャーに整合。取り扱いには元データのライセンス条件が適用されます。'
+  },
+  en:{
+    doctitle:'Rugby Analytics — Hub',
+    nav_home:'Home', nav_kick:'Kicking', nav_attack:'Attack', nav_defense:'Defense', nav_setpiece:'Set Piece',
+    hero_p:'A set of analytics dashboards built on Opta (Stats Perform) BI event data. Spans 7 competitions and 1,493 matches (2024–2026 seasons), comparing trends by phase of play on a per-match-average basis. Definitions are aligned with the Power BI measures.',
+    stat_comp:'Competitions', stat_match:'Matches', stat_season:'Seasons (2024–26)', stat_team:'Teams',
+    sec_h:'Analysis Pages', badge:'Live', lang_btn:'日本語',
+    tiles:{
+      kick:{h2:'Kicking', p:'Outcome analysis of 26,756 contestable kicks (Box / Bomb). See how well teams and players dominate the air.',
+        chips:['Regained','Forced error','Fail to gather','Opposition gather','Touch','Effective win rate']},
+      attack:{h2:'Attack', p:'Metrics on gain and defence-breaking from ball carries. Pick a metric to switch the team ranking and league comparison.',
+        chips:['Carries/match','Metres gained (Distance+)','Avg gain','Gainline break rate','Dominant rate','Defenders beaten','Line breaks','Offload success rate','22m entry → points rate','Tries']},
+      defense:{h2:'Defense', p:'Tackle and breakdown defensive metrics. Tackle success rate excludes Missed/Ineffective. By team and player.',
+        chips:['Tackles/match','Tackle success rate','Dominant rate','Missed tackles','Jackal (success rate)','Tackle turnovers won','Turnovers conceded']},
+      setpiece:{h2:'Set Piece', p:'Scrum, lineout and maul set-piece metrics, compared at the pack (team) level.',
+        chips:['Scrum success rate','Lineout success rate','Lineout steals','Maul success rate','Maul tries','Scrum penalties won']}
+    },
+    note_html:'<b>How to use.</b> Use the filters at the top of each page (competition / season / round / team) to narrow the data, and the "chart metric" dropdown to switch what you\'re looking at. Counts are shown as <b>per-match average</b>, rates as <b>total ÷ total</b>. Move between pages any time via the top menu. Exact definitions for each metric are listed in the footer at the bottom of each page.',
+    footer:'Data: Opta (Stats Perform) BI event data (Security Level 2 - Restricted). Definitions are aligned with Power BI measures. Use is subject to the source data\'s license terms.'
+  }
+};
+let LANG = localStorage.getItem('rugbyAnalyticsLang') || ((navigator.language||'').toLowerCase().startsWith('ja') ? 'ja' : 'en');
+function applyLang(){
+  const d = I18N[LANG];
+  document.documentElement.lang = LANG;
+  document.title = d.doctitle;
+  document.getElementById('nav-home').textContent = d.nav_home;
+  document.getElementById('nav-kick').textContent = d.nav_kick;
+  document.getElementById('nav-attack').textContent = d.nav_attack;
+  document.getElementById('nav-defense').textContent = d.nav_defense;
+  document.getElementById('nav-setpiece').textContent = d.nav_setpiece;
+  document.getElementById('lang-toggle').textContent = d.lang_btn;
+  document.getElementById('hero-p').textContent = d.hero_p;
+  document.getElementById('stat-comp-l').textContent = d.stat_comp;
+  document.getElementById('stat-match-l').textContent = d.stat_match;
+  document.getElementById('stat-season-l').textContent = d.stat_season;
+  document.getElementById('stat-team-l').textContent = d.stat_team;
+  document.getElementById('sec-h').textContent = d.sec_h;
+  ['kick','attack','defense','setpiece'].forEach(key=>{
+    const t = d.tiles[key];
+    document.getElementById('t-'+key+'-h2').textContent = t.h2;
+    document.getElementById('t-'+key+'-badge').textContent = d.badge;
+    document.getElementById('t-'+key+'-p').textContent = t.p;
+    const chipsWrap = document.getElementById('t-'+key+'-chips'); chipsWrap.replaceChildren();
+    t.chips.forEach(c=>{ const s=document.createElement('span'); s.className='chip'; s.textContent=c; chipsWrap.appendChild(s); });
+  });
+  document.getElementById('note-box').innerHTML = d.note_html;
+  document.getElementById('page-footer').textContent = d.footer;
+}
+applyLang();
+document.getElementById('lang-toggle').addEventListener('click', ()=>{
+  LANG = LANG==='ja' ? 'en' : 'ja';
+  localStorage.setItem('rugbyAnalyticsLang', LANG);
+  applyLang();
+});
+</script>
+</body>
+</html>
