@@ -222,19 +222,25 @@ function syncFilters(keepFixture){
 }
 
 // --- rendering ---
+const MATCH_CACHE = new Map(); // fixture.id -> {teamRows, playerRows}, cleared only on page reload
 async function render(){
   const content = document.getElementById('content');
   const fxIdVal = F.fixture();
   const fx = FIXTURES.find(r=>String(r.id)===fxIdVal);
   if(!fx){ content.innerHTML='<div class="empty">'+U().empty+'</div>'; return; }
-  content.innerHTML = '<div class="empty">'+U().loading+'</div>';
 
-  const [teamRes, playerRes] = await Promise.all([
-    sb.from('team_match_stats').select('*').eq('fixture_id', fx.id),
-    sb.from('player_match_stats').select('*').eq('fixture_id', fx.id),
-  ]);
-  if(teamRes.error || playerRes.error){ content.innerHTML = '<div class="empty">Error loading match data</div>'; console.error(teamRes.error||playerRes.error); return; }
-  const teamRows = teamRes.data, playerRows = playerRes.data;
+  let cached = MATCH_CACHE.get(fx.id);
+  if(!cached){
+    content.innerHTML = '<div class="empty">'+U().loading+'</div>';
+    const [teamRes, playerRes] = await Promise.all([
+      sb.from('team_match_stats').select('*').eq('fixture_id', fx.id),
+      sb.from('player_match_stats').select('*').eq('fixture_id', fx.id),
+    ]);
+    if(teamRes.error || playerRes.error){ content.innerHTML = '<div class="empty">Error loading match data</div>'; console.error(teamRes.error||playerRes.error); return; }
+    cached = { teamRows: teamRes.data, playerRows: playerRes.data };
+    MATCH_CACHE.set(fx.id, cached);
+  }
+  const teamRows = cached.teamRows, playerRows = cached.playerRows;
 
   const home = TEAMS[fx.home_team_id], away = TEAMS[fx.away_team_id];
   const homeM = teamMetricsFrom(teamRows, 0), awayM = teamMetricsFrom(teamRows, 1);
