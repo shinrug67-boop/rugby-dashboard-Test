@@ -32,7 +32,7 @@ header .sub { font-size:12.5px; color:var(--ink-2); margin-top:2px; }
 .filters { display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin:16px 0 6px; }
 .fg { display:flex; align-items:center; gap:6px; }
 .fg label { font-size:12px; color:var(--ink-2); }
-.fg select { padding:6px 10px; font-size:13px; color:var(--ink-1); max-width:230px;
+.fg select { padding:6px 10px; font-size:16px; color:var(--ink-1); max-width:230px;
   background:var(--surface); border:1px solid var(--border); border-radius:6px; }
 .fg select:disabled { opacity:.45; }
 .kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:var(--gap); margin:10px 0 var(--gap); }
@@ -75,6 +75,7 @@ footer { margin-top:16px; font-size:12px; color:var(--ink-muted); }
     <a href="attack.html" data-nav="attack" id="nav-attack">アタック</a>
     <a href="defense.html" data-nav="defense" id="nav-defense">ディフェンス</a>
     <a href="setpiece.html" data-nav="setpiece" id="nav-setpiece">FWセットプレー</a>
+    <a href="game.html" data-nav="game" id="nav-game">試合サマリー</a>
   </div>
   <span class="spacer"></span>
   <button id="lang-toggle" type="button">EN</button>
@@ -171,7 +172,7 @@ const CFG_EN = {
     row:(name,team,c,gp)=>({name,team,gp,__min:gp,carries:gp?c.carries/gp:0,cm:gp?c.carry_distplus/gp:0,mpc:c.carries?c.carry_distplus/c.carries:0,gl:c.carries?c.gainline/c.carries*100:0,db:gp?c.def_beaten/gp:0,lb:gp?c.linebreak/gp:0,off:gp?c.offload/gp:0,tries:gp?c.tries/gp:0}) }
 };
 const UI = {
-  ja:{ nav_home:'ホーム', nav_kick:'キック', nav_attack:'アタック', nav_defense:'ディフェンス', nav_setpiece:'FWセットプレー',
+  ja:{ nav_home:'ホーム', nav_kick:'キック', nav_attack:'アタック', nav_defense:'ディフェンス', nav_setpiece:'FWセットプレー', nav_game:'試合サマリー',
     f_comp:'コンペティション', f_season:'シーズン', f_round:'ラウンド', f_team:'チーム', f_metric:'チャート指標',
     all_comp:'全コンペ', all_season:'全シーズン', all_round:'全節', all_team:'全チーム',
     rank_prefix:'チーム別ランキング — ', comp_prefix:'コンペティション比較 — ', comp_desc:'選択中の指標でリーグを比較(1試合平均)',
@@ -179,7 +180,7 @@ const UI = {
     player_tbl_title:'選手別 詳細テーブル', lang_btn:'EN',
     rank_desc:(capped,cap,minGames,hasDenom)=>(capped?`上位${cap}チーム。`:'')+`${minGames}試合以上。`+(hasDenom?'標本の少ないチームは除外。':'')+'ホバーで内訳',
     player_desc:(min,eligible,capped,cap)=>`出場${min}以上の選手${eligible.toLocaleString()}人中`+(capped?`、現ソート上位${cap}人。`:`全員。`)+' 数量は1試合平均・ラウンドフィルタ適用外' },
-  en:{ nav_home:'Home', nav_kick:'Kicking', nav_attack:'Attack', nav_defense:'Defense', nav_setpiece:'Set Piece',
+  en:{ nav_home:'Home', nav_kick:'Kicking', nav_attack:'Attack', nav_defense:'Defense', nav_setpiece:'Set Piece', nav_game:'Game Summary',
     f_comp:'Competition', f_season:'Season', f_round:'Round', f_team:'Team', f_metric:'Chart metric',
     all_comp:'All competitions', all_season:'All seasons', all_round:'All rounds', all_team:'All teams',
     rank_prefix:'Team Ranking — ', comp_prefix:'Competition Comparison — ', comp_desc:'Compares leagues on the selected metric (per-match average)',
@@ -295,6 +296,7 @@ function setStaticChrome(){
   document.getElementById('nav-attack').textContent=U().nav_attack;
   document.getElementById('nav-defense').textContent=U().nav_defense;
   document.getElementById('nav-setpiece').textContent=U().nav_setpiece;
+  document.getElementById('nav-game').textContent=U().nav_game;
   document.getElementById('lbl-comp').textContent=U().f_comp;
   document.getElementById('lbl-season').textContent=U().f_season;
   document.getElementById('lbl-round').textContent=U().f_round;

@@ -67,6 +67,7 @@ footer { margin-top:28px; font-size:12px; color:var(--ink-muted); border-top:1px
     <a href="attack.html" id="nav-attack">アタック</a>
     <a href="defense.html" id="nav-defense">ディフェンス</a>
     <a href="setpiece.html" id="nav-setpiece">FWセットプレー</a>
+    <a href="game.html" id="nav-game">試合サマリー</a>
   </div>
   <span class="spacer"></span>
   <button id="lang-toggle" type="button">EN</button>
@@ -105,6 +106,11 @@ footer { margin-top:28px; font-size:12px; color:var(--ink-muted); border-top:1px
       <p id="t-setpiece-p">スクラム・ラインアウト・モールのセットピース指標。パック(チーム)単位で比較します。</p>
       <div class="chips" id="t-setpiece-chips"></div>
     </a>
+    <a class="tile" href="game.html">
+      <div class="top"><span class="ico">📋</span><h2 id="t-game-h2">試合サマリー</h2><span class="badge" id="t-game-badge">公開中</span><span class="arrow">→</span></div>
+      <p id="t-game-p">試合単位のチーム比較・選手出場データ。1試合を選び、前半/後半別のスタッツと選手ロースターを見られます。</p>
+      <div class="chips" id="t-game-chips"></div>
+    </a>
   </div>
 
   <div class="note" id="note-box">
@@ -119,7 +125,7 @@ footer { margin-top:28px; font-size:12px; color:var(--ink-muted); border-top:1px
 const I18N = {
   ja:{
     doctitle:'Rugby Analytics — 分析ハブ',
-    nav_home:'ホーム', nav_kick:'キック', nav_attack:'アタック', nav_defense:'ディフェンス', nav_setpiece:'FWセットプレー',
+    nav_home:'ホーム', nav_kick:'キック', nav_attack:'アタック', nav_defense:'ディフェンス', nav_setpiece:'FWセットプレー', nav_game:'試合サマリー',
     hero_p:'Opta (Stats Perform) BIイベントデータをもとにした分析ダッシュボード集。7コンペティション・1,493試合(2024〜2026シーズン)を横断し、局面ごとの傾向を「1試合平均」で比較できます。集計定義は Power BI のメジャーに整合しています。',
     stat_comp:'コンペティション', stat_match:'試合', stat_season:'シーズン (2024–26)', stat_team:'チーム',
     sec_h:'分析ページ', badge:'公開中', lang_btn:'EN',
@@ -131,14 +137,16 @@ const I18N = {
       defense:{h2:'ディフェンス', p:'タックルとブレイクダウンの守備指標。タックル成功率はMissed/Ineffectiveを除く定義。チーム別・選手別。',
         chips:['タックル/試合','タックル成功率','ドミナント率','ミスタックル','ジャッカル(成功率)','タックルTO獲得','被ターンオーバー']},
       setpiece:{h2:'FWセットプレー', p:'スクラム・ラインアウト・モールのセットピース指標。パック(チーム)単位で比較します。',
-        chips:['スクラム成功率','ラインアウト成功率','ラインアウトスティール','モール成功率','モールトライ','スクラムPK獲得']}
+        chips:['スクラム成功率','ラインアウト成功率','ラインアウトスティール','モール成功率','モールトライ','スクラムPK獲得']},
+      game:{h2:'試合サマリー', p:'試合単位のチーム比較・選手出場データ。1試合を選び、前半/後半別のスタッツと選手ロースターを見られます。',
+        chips:['前半/後半別スタッツ','スコア','GainLine%','タックル成否(選手別)','出場時間']}
     },
     note_html:'<b>使い方.</b> 各ページ上部のフィルタ(コンペティション / シーズン / ラウンド / チーム)で対象を絞り込み、「チャート指標」で見たい数字に切り替えます。数量は<b>1試合平均</b>、率は<b>合計÷合計</b>で算出。ページ間は上部メニューでいつでも行き来できます。各指標の正確な定義は、各ページ下部のフッターに記載しています。',
     footer:'データ: Opta (Stats Perform) BIイベントデータ(Security Level 2 - Restricted)。集計定義は Power BI メジャーに整合。取り扱いには元データのライセンス条件が適用されます。'
   },
   en:{
     doctitle:'Rugby Analytics — Hub',
-    nav_home:'Home', nav_kick:'Kicking', nav_attack:'Attack', nav_defense:'Defense', nav_setpiece:'Set Piece',
+    nav_home:'Home', nav_kick:'Kicking', nav_attack:'Attack', nav_defense:'Defense', nav_setpiece:'Set Piece', nav_game:'Game Summary',
     hero_p:'A set of analytics dashboards built on Opta (Stats Perform) BI event data. Spans 7 competitions and 1,493 matches (2024–2026 seasons), comparing trends by phase of play on a per-match-average basis. Definitions are aligned with the Power BI measures.',
     stat_comp:'Competitions', stat_match:'Matches', stat_season:'Seasons (2024–26)', stat_team:'Teams',
     sec_h:'Analysis Pages', badge:'Live', lang_btn:'日本語',
@@ -150,7 +158,9 @@ const I18N = {
       defense:{h2:'Defense', p:'Tackle and breakdown defensive metrics. Tackle success rate excludes Missed/Ineffective. By team and player.',
         chips:['Tackles/match','Tackle success rate','Dominant rate','Missed tackles','Jackal (success rate)','Tackle turnovers won','Turnovers conceded']},
       setpiece:{h2:'Set Piece', p:'Scrum, lineout and maul set-piece metrics, compared at the pack (team) level.',
-        chips:['Scrum success rate','Lineout success rate','Lineout steals','Maul success rate','Maul tries','Scrum penalties won']}
+        chips:['Scrum success rate','Lineout success rate','Lineout steals','Maul success rate','Maul tries','Scrum penalties won']},
+      game:{h2:'Game Summary', p:'Match-level team comparison and player appearances. Pick a fixture to see 1st/2nd-half stats and the player roster.',
+        chips:['1st/2nd half stats','Score','GainLine%','Tackle outcomes (by player)','Time on pitch']}
     },
     note_html:'<b>How to use.</b> Use the filters at the top of each page (competition / season / round / team) to narrow the data, and the "chart metric" dropdown to switch what you\'re looking at. Counts are shown as <b>per-match average</b>, rates as <b>total ÷ total</b>. Move between pages any time via the top menu. Exact definitions for each metric are listed in the footer at the bottom of each page.',
     footer:'Data: Opta (Stats Perform) BI event data (Security Level 2 - Restricted). Definitions are aligned with Power BI measures. Use is subject to the source data\'s license terms.'
@@ -166,6 +176,7 @@ function applyLang(){
   document.getElementById('nav-attack').textContent = d.nav_attack;
   document.getElementById('nav-defense').textContent = d.nav_defense;
   document.getElementById('nav-setpiece').textContent = d.nav_setpiece;
+  document.getElementById('nav-game').textContent = d.nav_game;
   document.getElementById('lang-toggle').textContent = d.lang_btn;
   document.getElementById('hero-p').textContent = d.hero_p;
   document.getElementById('stat-comp-l').textContent = d.stat_comp;
@@ -173,7 +184,7 @@ function applyLang(){
   document.getElementById('stat-season-l').textContent = d.stat_season;
   document.getElementById('stat-team-l').textContent = d.stat_team;
   document.getElementById('sec-h').textContent = d.sec_h;
-  ['kick','attack','defense','setpiece'].forEach(key=>{
+  ['kick','attack','defense','setpiece','game'].forEach(key=>{
     const t = d.tiles[key];
     document.getElementById('t-'+key+'-h2').textContent = t.h2;
     document.getElementById('t-'+key+'-badge').textContent = d.badge;
