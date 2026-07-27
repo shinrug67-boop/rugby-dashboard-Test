@@ -101,15 +101,6 @@ footer { margin-top:16px; font-size:12px; color:var(--ink-muted); }
 #logout-btn{font-size:12px;font-weight:600;color:var(--ink-2);background:var(--surface);border:1px solid var(--border);
   border-radius:6px;padding:5px 11px;cursor:pointer;white-space:nowrap;}
 #logout-btn:hover{background:color-mix(in srgb,var(--ink-1) 7%,transparent);}
-#login-screen { display:flex; min-height:70vh; align-items:center; justify-content:center; }
-.login-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:28px 30px; width:100%; max-width:320px; }
-.login-card h2 { font-size:17px; font-weight:700; margin-bottom:16px; }
-.login-card input { width:100%; padding:9px 11px; font-size:16px; margin-bottom:10px;
-  background:var(--page); border:1px solid var(--border); border-radius:6px; color:var(--ink-1); }
-.login-card button { width:100%; padding:9px; font-size:13.5px; font-weight:600; color:#fff; background:#2a78d6;
-  border:none; border-radius:6px; cursor:pointer; margin-top:4px; }
-.login-card button:hover { background:#1f63b5; }
-.login-card .err { color:#d64545; font-size:12px; margin-top:8px; min-height:1em; }
 </style>
 </head>
 <body>
@@ -124,19 +115,10 @@ footer { margin-top:16px; font-size:12px; color:var(--ink-muted); }
     <a href="game.html" id="nav-game">試合サマリー</a>
   </div>
   <span class="spacer"></span>
-  <button id="logout-btn" type="button" style="display:none"></button>
+  <button id="logout-btn" type="button"></button>
   <button id="lang-toggle" type="button">EN</button>
 </nav>
-<div id="login-screen" style="display:none">
-  <div class="login-card">
-    <h2 id="login-title"></h2>
-    <input id="login-email" type="email" autocomplete="username" placeholder="email@example.com">
-    <input id="login-password" type="password" autocomplete="current-password" placeholder="••••••••">
-    <button id="login-submit" type="button"></button>
-    <div class="err" id="login-error"></div>
-  </div>
-</div>
-<div class="wrap" id="app-content" style="display:none">
+<div class="wrap">
   <header>
     <h1 id="page-title">コンテストキック ダッシュボード — 全コンペティション</h1>
     <div class="sub" id="page-sub">7コンペティション・1,493試合・26,756本(2024〜2026シーズン) | 定義: Kick × Kick in Play / Kick in Play (Own 22) × Box / Bomb | 結果分類は Stats Perform BI Event Data 2.0.0 Table 31 準拠</div>
@@ -239,7 +221,7 @@ const UI = {
     page_title:'コンテストキック ダッシュボード — 全コンペティション',
     page_sub:'7コンペティション・1,493試合・26,756本(2024〜2026シーズン) | 定義: Kick × Kick in Play / Kick in Play (Own 22) × Box / Bomb | 結果分類は Stats Perform BI Event Data 2.0.0 Table 31 準拠',
     nav_home:'ホーム', nav_kick:'キック', nav_attack:'アタック', nav_defense:'ディフェンス', nav_setpiece:'FWセットプレー', nav_game:'試合サマリー',
-    login_title:'ログイン', login_btn:'ログイン', logout_btn:'ログアウト',
+    logout_btn:'ログアウト',
     f_comp:'コンペティション', f_season:'シーズン', f_round:'ラウンド', f_team:'チーム', f_type:'キック種類',
     all_comp:'全コンペ', all_season:'全シーズン', all_round:'全節', all_team:'全チーム',
     lbl_k_total:'コンテストキック', lbl_k_ret:'再獲得(味方確保)', lbl_k_pre:'相手エラー誘発', lbl_k_win:'実効勝率', lbl_k_lost:'相手確保',
@@ -261,7 +243,7 @@ const UI = {
     page_title:'Contestable Kick Dashboard — All Competitions',
     page_sub:'7 competitions · 1,493 matches · 26,756 kicks (2024–2026 seasons) | Definition: Kick × (Kick in Play / Kick in Play (Own 22)) × (Box / Bomb) | Outcome categories per Stats Perform BI Event Data 2.0.0 Table 31',
     nav_home:'Home', nav_kick:'Kicking', nav_attack:'Attack', nav_defense:'Defense', nav_setpiece:'Set Piece', nav_game:'Game Summary',
-    login_title:'Sign in', login_btn:'Sign in', logout_btn:'Sign out',
+    logout_btn:'Sign out',
     f_comp:'Competition', f_season:'Season', f_round:'Round', f_team:'Team', f_type:'Kick type',
     all_comp:'All competitions', all_season:'All seasons', all_round:'All rounds', all_team:'All teams',
     lbl_k_total:'Contestable kicks', lbl_k_ret:'Regained (own gather)', lbl_k_pre:'Forced error', lbl_k_win:'Effective win rate', lbl_k_lost:'Opposition secured',
@@ -715,11 +697,6 @@ function setStaticChrome(){
   document.getElementById('page-footer').textContent = U().footer;
   const compAllOpt = document.querySelector('#f-comp option[value="all"]'); if (compAllOpt) compAllOpt.textContent = U().all_comp;
   document.getElementById('lang-toggle').textContent = U().lang_btn;
-  setLoginChrome();
-}
-function setLoginChrome(){
-  document.getElementById('login-title').textContent=U().login_title;
-  document.getElementById('login-submit').textContent=U().login_btn;
   document.getElementById('logout-btn').textContent=U().logout_btn;
 }
 function fullRefresh(){
@@ -729,60 +706,37 @@ function fullRefresh(){
   buildLegend();
   render();
 }
-// --- auth ---
-let appInitialized=false;
-function showLogin(){
-  document.getElementById('login-screen').style.display='flex';
-  document.getElementById('app-content').style.display='none';
-  document.getElementById('logout-btn').style.display='none';
+// Server-side login gate lives in middleware.js (Vercel Edge Middleware) --
+// by the time this page's HTML is served, the visitor already has a valid
+// `sb-auth` cookie from login.html. Supabase auth here is only needed for
+// the logout button.
+async function doLogout(){
+  await sb.auth.signOut();
+  document.cookie = 'sb-auth=; Path=/; Max-Age=0; SameSite=Lax; Secure';
+  location.href = 'login.html';
 }
-async function enterApp(){
-  document.getElementById('login-screen').style.display='none';
-  document.getElementById('app-content').style.display='';
-  document.getElementById('logout-btn').style.display='';
-  if(appInitialized){ fullRefresh(); return; }
-  appInitialized=true;
+
+(function(){
   const cs = document.getElementById('f-comp');
   RAW.comps.forEach(cname => {
     const o = document.createElement('option'); o.value = cname; o.textContent = cname; cs.appendChild(o);
   });
+  document.getElementById('lang-toggle').addEventListener('click', ()=>{
+    LANG = LANG==='ja' ? 'en' : 'ja';
+    localStorage.setItem('rugbyAnalyticsLang', LANG);
+    fullRefresh();
+  });
+  document.getElementById('logout-btn').addEventListener('click', doLogout);
   fullRefresh();
   document.getElementById('f-comp').addEventListener('change', ()=>{ document.getElementById('f-round').value='all'; syncDependentFilters(); render(); });
   document.getElementById('f-season').addEventListener('change', ()=>{ syncDependentFilters(); render(); });
   ['f-round','f-team','f-type'].forEach(id =>
     document.getElementById(id).addEventListener('change', render));
-}
-async function doLogin(){
-  const email=document.getElementById('login-email').value.trim();
-  const password=document.getElementById('login-password').value;
-  const errEl=document.getElementById('login-error'); errEl.textContent='';
-  const { error } = await sb.auth.signInWithPassword({ email, password });
-  if(error){ errEl.textContent = error.message; return; }
-  await enterApp();
-}
-async function doLogout(){ await sb.auth.signOut(); showLogin(); }
-
-(function(){
-  setLoginChrome();
-  document.getElementById('lang-toggle').addEventListener('click', async ()=>{
-    LANG = LANG==='ja' ? 'en' : 'ja';
-    localStorage.setItem('rugbyAnalyticsLang', LANG);
-    setLoginChrome();
-    const { data:{ session } } = await sb.auth.getSession();
-    if(session){ fullRefresh(); }
-  });
-  document.getElementById('login-submit').addEventListener('click', doLogin);
-  document.getElementById('login-password').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
-  document.getElementById('logout-btn').addEventListener('click', doLogout);
   let rT;
   window.addEventListener('resize', ()=>{ clearTimeout(rT); rT = setTimeout(render, 150); });
   if (window.matchMedia) {
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ()=>{ buildLegend(); render(); });
   }
-  (async ()=>{
-    const { data:{ session } } = await sb.auth.getSession();
-    if(session){ await enterApp(); } else { showLogin(); }
-  })();
 })();
 </script>
 </body>

@@ -37,15 +37,6 @@ body { font-family: system-ui, -apple-system, "Segoe UI", "Hiragino Kaku Gothic 
 #logout-btn{font-size:12px;font-weight:600;color:var(--ink-2);background:var(--surface);border:1px solid var(--border);
   border-radius:6px;padding:5px 11px;cursor:pointer;white-space:nowrap;}
 #logout-btn:hover{background:color-mix(in srgb,var(--ink-1) 7%,transparent);}
-#login-screen { display:flex; min-height:70vh; align-items:center; justify-content:center; }
-.login-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:28px 30px; width:100%; max-width:320px; }
-.login-card h2 { font-size:17px; font-weight:700; margin-bottom:16px; }
-.login-card input { width:100%; padding:9px 11px; font-size:16px; margin-bottom:10px;
-  background:var(--page); border:1px solid var(--border); border-radius:6px; color:var(--ink-1); }
-.login-card button { width:100%; padding:9px; font-size:13.5px; font-weight:600; color:#fff; background:#2a78d6;
-  border:none; border-radius:6px; cursor:pointer; margin-top:4px; }
-.login-card button:hover { background:#1f63b5; }
-.login-card .err { color:#d64545; font-size:12px; margin-top:8px; min-height:1em; }
 .wrap { max-width:1100px; margin:0 auto; padding:34px 20px 48px; }
 .hero h1 { font-size:30px; font-weight:750; letter-spacing:.2px; }
 .hero p { color:var(--ink-2); margin-top:8px; max-width:680px; font-size:14.5px; }
@@ -83,19 +74,10 @@ footer { margin-top:28px; font-size:12px; color:var(--ink-muted); border-top:1px
     <a href="game.html" id="nav-game">試合サマリー</a>
   </div>
   <span class="spacer"></span>
-  <button id="logout-btn" type="button" style="display:none"></button>
+  <button id="logout-btn" type="button"></button>
   <button id="lang-toggle" type="button">EN</button>
 </nav>
-<div id="login-screen" style="display:none">
-  <div class="login-card">
-    <h2 id="login-title"></h2>
-    <input id="login-email" type="email" autocomplete="username" placeholder="email@example.com">
-    <input id="login-password" type="password" autocomplete="current-password" placeholder="••••••••">
-    <button id="login-submit" type="button"></button>
-    <div class="err" id="login-error"></div>
-  </div>
-</div>
-<div class="wrap" id="app-content" style="display:none">
+<div class="wrap">
   <div class="hero">
     <h1>Rugby Analytics</h1>
     <p id="hero-p">Opta (Stats Perform) BIイベントデータをもとにした分析ダッシュボード集。7コンペティション・1,493試合(2024〜2026シーズン)を横断し、局面ごとの傾向を「1試合平均」で比較できます。集計定義は Power BI のメジャーに整合しています。</p>
@@ -152,7 +134,7 @@ const I18N = {
   ja:{
     doctitle:'Rugby Analytics — 分析ハブ',
     nav_home:'ホーム', nav_kick:'キック', nav_attack:'アタック', nav_defense:'ディフェンス', nav_setpiece:'FWセットプレー', nav_game:'試合サマリー',
-    login_title:'ログイン', login_btn:'ログイン', logout_btn:'ログアウト',
+    logout_btn:'ログアウト',
     hero_p:'Opta (Stats Perform) BIイベントデータをもとにした分析ダッシュボード集。7コンペティション・1,493試合(2024〜2026シーズン)を横断し、局面ごとの傾向を「1試合平均」で比較できます。集計定義は Power BI のメジャーに整合しています。',
     stat_comp:'コンペティション', stat_match:'試合', stat_season:'シーズン (2024–26)', stat_team:'チーム',
     sec_h:'分析ページ', badge:'公開中', lang_btn:'EN',
@@ -174,7 +156,7 @@ const I18N = {
   en:{
     doctitle:'Rugby Analytics — Hub',
     nav_home:'Home', nav_kick:'Kicking', nav_attack:'Attack', nav_defense:'Defense', nav_setpiece:'Set Piece', nav_game:'Game Summary',
-    login_title:'Sign in', login_btn:'Sign in', logout_btn:'Sign out',
+    logout_btn:'Sign out',
     hero_p:'A set of analytics dashboards built on Opta (Stats Perform) BI event data. Spans 7 competitions and 1,493 matches (2024–2026 seasons), comparing trends by phase of play on a per-match-average basis. Definitions are aligned with the Power BI measures.',
     stat_comp:'Competitions', stat_match:'Matches', stat_season:'Seasons (2024–26)', stat_team:'Teams',
     sec_h:'Analysis Pages', badge:'Live', lang_btn:'日本語',
@@ -222,8 +204,6 @@ function applyLang(){
   });
   document.getElementById('note-box').innerHTML = d.note_html;
   document.getElementById('page-footer').textContent = d.footer;
-  document.getElementById('login-title').textContent = d.login_title;
-  document.getElementById('login-submit').textContent = d.login_btn;
   document.getElementById('logout-btn').textContent = d.logout_btn;
 }
 applyLang();
@@ -233,33 +213,16 @@ document.getElementById('lang-toggle').addEventListener('click', ()=>{
   applyLang();
 });
 
-// --- auth ---
-function showLogin(){
-  document.getElementById('login-screen').style.display='flex';
-  document.getElementById('app-content').style.display='none';
-  document.getElementById('logout-btn').style.display='none';
+// Server-side login gate lives in middleware.js (Vercel Edge Middleware) --
+// by the time this page's HTML is served, the visitor already has a valid
+// `sb-auth` cookie from login.html. Supabase auth here is only needed for
+// the logout button.
+async function doLogout(){
+  await sb.auth.signOut();
+  document.cookie = 'sb-auth=; Path=/; Max-Age=0; SameSite=Lax; Secure';
+  location.href = 'login.html';
 }
-function enterApp(){
-  document.getElementById('login-screen').style.display='none';
-  document.getElementById('app-content').style.display='';
-  document.getElementById('logout-btn').style.display='';
-}
-async function doLogin(){
-  const email=document.getElementById('login-email').value.trim();
-  const password=document.getElementById('login-password').value;
-  const errEl=document.getElementById('login-error'); errEl.textContent='';
-  const { error } = await sb.auth.signInWithPassword({ email, password });
-  if(error){ errEl.textContent = error.message; return; }
-  enterApp();
-}
-async function doLogout(){ await sb.auth.signOut(); showLogin(); }
-document.getElementById('login-submit').addEventListener('click', doLogin);
-document.getElementById('login-password').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
 document.getElementById('logout-btn').addEventListener('click', doLogout);
-(async ()=>{
-  const { data:{ session } } = await sb.auth.getSession();
-  if(session){ enterApp(); } else { showLogin(); }
-})();
 </script>
 </body>
 </html>

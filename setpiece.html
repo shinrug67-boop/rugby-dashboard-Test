@@ -68,15 +68,6 @@ footer { margin-top:16px; font-size:12px; color:var(--ink-muted); }
 #logout-btn{font-size:12px;font-weight:600;color:var(--ink-2);background:var(--surface);border:1px solid var(--border);
   border-radius:6px;padding:5px 11px;cursor:pointer;white-space:nowrap;}
 #logout-btn:hover{background:color-mix(in srgb,var(--ink-1) 7%,transparent);}
-#login-screen { display:flex; min-height:70vh; align-items:center; justify-content:center; }
-.login-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:28px 30px; width:100%; max-width:320px; }
-.login-card h2 { font-size:17px; font-weight:700; margin-bottom:16px; }
-.login-card input { width:100%; padding:9px 11px; font-size:16px; margin-bottom:10px;
-  background:var(--page); border:1px solid var(--border); border-radius:6px; color:var(--ink-1); }
-.login-card button { width:100%; padding:9px; font-size:13.5px; font-weight:600; color:#fff; background:#2a78d6;
-  border:none; border-radius:6px; cursor:pointer; margin-top:4px; }
-.login-card button:hover { background:#1f63b5; }
-.login-card .err { color:#d64545; font-size:12px; margin-top:8px; min-height:1em; }
 </style>
 </head>
 <body>
@@ -91,19 +82,10 @@ footer { margin-top:16px; font-size:12px; color:var(--ink-muted); }
     <a href="game.html" data-nav="game" id="nav-game">試合サマリー</a>
   </div>
   <span class="spacer"></span>
-  <button id="logout-btn" type="button" style="display:none"></button>
+  <button id="logout-btn" type="button"></button>
   <button id="lang-toggle" type="button">EN</button>
 </nav>
-<div id="login-screen" style="display:none">
-  <div class="login-card">
-    <h2 id="login-title"></h2>
-    <input id="login-email" type="email" autocomplete="username" placeholder="email@example.com">
-    <input id="login-password" type="password" autocomplete="current-password" placeholder="••••••••">
-    <button id="login-submit" type="button"></button>
-    <div class="err" id="login-error"></div>
-  </div>
-</div>
-<div class="wrap" id="app-content" style="display:none">
+<div class="wrap">
   <header><h1 id="page-title"></h1><div class="sub" id="page-sub"></div></header>
   <div class="filters">
     <div class="fg"><label for="f-comp" id="lbl-comp">コンペティション</label><select id="f-comp"><option value="all">全コンペ</option></select></div>
@@ -190,7 +172,7 @@ const UI = {
     rank_prefix:'チーム別ランキング — ', comp_prefix:'コンペティション比較 — ', comp_desc:'選択中の指標でリーグを比較(1試合平均)',
     team_tbl_title:'チーム別 詳細テーブル', team_tbl_desc:'見出しクリックでソート。数量は1試合平均、率は合計比',
     player_tbl_title:'選手別 詳細テーブル', lang_btn:'EN',
-    login_title:'ログイン', login_btn:'ログイン', logout_btn:'ログアウト',
+    logout_btn:'ログアウト',
     rank_desc:(capped,cap,minGames,hasDenom)=>(capped?`上位${cap}チーム。`:'')+`${minGames}試合以上。`+(hasDenom?'標本の少ないチームは除外。':'')+'ホバーで内訳',
     player_desc:(min,eligible,capped,cap)=>`出場${min}以上の選手${eligible.toLocaleString()}人中`+(capped?`、現ソート上位${cap}人。`:`全員。`)+' 数量は1試合平均・ラウンドフィルタ適用外' },
   en:{ nav_home:'Home', nav_kick:'Kicking', nav_attack:'Attack', nav_defense:'Defense', nav_setpiece:'Set Piece', nav_game:'Game Summary',
@@ -199,7 +181,7 @@ const UI = {
     rank_prefix:'Team Ranking — ', comp_prefix:'Competition Comparison — ', comp_desc:'Compares leagues on the selected metric (per-match average)',
     team_tbl_title:'Team Detail Table', team_tbl_desc:'Click a header to sort. Counts are per-match average; rates are total ÷ total',
     player_tbl_title:'Player Detail Table', lang_btn:'日本語',
-    login_title:'Sign in', login_btn:'Sign in', logout_btn:'Sign out',
+    logout_btn:'Sign out',
     rank_desc:(capped,cap,minGames,hasDenom)=>(capped?`Top ${cap} teams. `:'')+`${minGames}+ matches. `+(hasDenom?'Small-sample teams excluded. ':'')+'Hover for breakdown',
     player_desc:(min,eligible,capped,cap)=>`${eligible.toLocaleString()} players with ${min}+ caps`+(capped?`, showing top ${cap} (current sort).`:', showing all.')+' Values are per-match average; round filter not applied' }
 };
@@ -322,11 +304,6 @@ function setStaticChrome(){
   const ptt=document.getElementById('player-tbl-title'); if(ptt) ptt.textContent=U().player_tbl_title;
   const compAllOpt=document.querySelector('#f-comp option[value="all"]'); if(compAllOpt) compAllOpt.textContent=U().all_comp;
   document.getElementById('lang-toggle').textContent=U().lang_btn;
-  setLoginChrome();
-}
-function setLoginChrome(){
-  document.getElementById('login-title').textContent=U().login_title;
-  document.getElementById('login-submit').textContent=U().login_btn;
   document.getElementById('logout-btn').textContent=U().logout_btn;
 }
 function buildKpis(){
@@ -342,53 +319,29 @@ function fullRefresh(){
   CFG=LANG==='ja'?CFG_JA:CFG_EN; METRICS=CFG.metrics;
   setStaticChrome(); buildKpis(); populateMetricSelect(); syncFilters(); render();
 }
-// --- auth ---
-let appInitialized=false;
-function showLogin(){
-  document.getElementById('login-screen').style.display='flex';
-  document.getElementById('app-content').style.display='none';
-  document.getElementById('logout-btn').style.display='none';
+// Server-side login gate lives in middleware.js (Vercel Edge Middleware) --
+// by the time this page's HTML is served, the visitor already has a valid
+// `sb-auth` cookie from login.html. This client just needs a working
+// Supabase session for the logout button (and, on game.html, for data
+// queries under RLS).
+async function doLogout(){
+  await sb.auth.signOut();
+  document.cookie = 'sb-auth=; Path=/; Max-Age=0; SameSite=Lax; Secure';
+  location.href = 'login.html';
 }
-async function enterApp(){
-  document.getElementById('login-screen').style.display='none';
-  document.getElementById('app-content').style.display='';
-  document.getElementById('logout-btn').style.display='';
-  if(appInitialized){ fullRefresh(); return; }
-  appInitialized=true;
+
+(function(){
   const nav=document.querySelector(`.navlinks a[data-nav="${CFG.active}"]`); if(nav)nav.classList.add('active');
   if(!CFG.player){ const pc=document.getElementById('player-card'); if(pc)pc.remove(); }
   const cs=document.getElementById('f-comp'); RAW.comps.forEach(c=>{ const o=document.createElement('option');o.value=c;o.textContent=c;cs.appendChild(o); });
+  document.getElementById('lang-toggle').addEventListener('click',()=>{ LANG=LANG==='ja'?'en':'ja'; localStorage.setItem('rugbyAnalyticsLang',LANG); fullRefresh(); });
+  document.getElementById('logout-btn').addEventListener('click', doLogout);
   fullRefresh();
   document.getElementById('f-comp').addEventListener('change',()=>{ document.getElementById('f-round').value='all'; syncFilters(); render(); });
   document.getElementById('f-season').addEventListener('change',()=>{ syncFilters(); render(); });
   ['f-round','f-team','f-metric'].forEach(id=>document.getElementById(id).addEventListener('change',render));
-}
-async function doLogin(){
-  const email=document.getElementById('login-email').value.trim();
-  const password=document.getElementById('login-password').value;
-  const errEl=document.getElementById('login-error'); errEl.textContent='';
-  const { error } = await sb.auth.signInWithPassword({ email, password });
-  if(error){ errEl.textContent = error.message; return; }
-  await enterApp();
-}
-async function doLogout(){ await sb.auth.signOut(); showLogin(); }
-
-(function(){
-  setLoginChrome();
-  document.getElementById('lang-toggle').addEventListener('click', async ()=>{
-    LANG=LANG==='ja'?'en':'ja'; localStorage.setItem('rugbyAnalyticsLang',LANG); setLoginChrome();
-    const { data:{ session } } = await sb.auth.getSession();
-    if(session){ fullRefresh(); }
-  });
-  document.getElementById('login-submit').addEventListener('click', doLogin);
-  document.getElementById('login-password').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
-  document.getElementById('logout-btn').addEventListener('click', doLogout);
   let rT; addEventListener('resize',()=>{ clearTimeout(rT); rT=setTimeout(render,150); });
   if(window.matchMedia) matchMedia('(prefers-color-scheme: dark)').addEventListener('change',render);
-  (async ()=>{
-    const { data:{ session } } = await sb.auth.getSession();
-    if(session){ await enterApp(); } else { showLogin(); }
-  })();
 })();
 </script>
 </body>
