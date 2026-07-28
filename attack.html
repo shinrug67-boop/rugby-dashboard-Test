@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="team-logos.js"></script>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 :root { color-scheme: dark;
@@ -247,7 +248,9 @@ function hBar(containerId,items,opts){ const box=document.getElementById(contain
     t.textContent=opts.fmt==='pct'?gv.toFixed(0):(opts.fmt==='f2'||opts.fmt==='f1'?gv.toFixed(1):(gv>=10000?Math.round(gv/1000)+'k':Math.round(gv).toLocaleString())); }
   el('line',{x1:labelW,y1:padT,x2:labelW,y2:H-padB,stroke:cssColor('--baseline'),'stroke-width':1},svg);
   items.forEach((d,i)=>{ const y=padT+i*rowH+(rowH-barH)/2; const lab=el('text',{x:labelW-8,y:y+barH/2+4,'text-anchor':'end','font-size':11.5,fill:cssColor('--ink-2')},svg);
-    lab.textContent=d.name.length>16?d.name.slice(0,15)+'…':d.name; const w=Math.max(0,xs(d.value)-labelW);
+    lab.textContent=d.name.length>16?d.name.slice(0,15)+'…':d.name;
+    if(opts.teamLogos){ const src=teamLogoSrc(d.name); if(src) el('image',{href:src,x:4,y:y+(barH-15)/2,width:15,height:15,preserveAspectRatio:'xMidYMid meet'},svg); }
+    const w=Math.max(0,xs(d.value)-labelW);
     el('rect',{x:labelW,y,width:w,height:barH,rx:3,fill:cssColor(opts.soft?'--bar-soft':'--bar')},svg);
     const r=el('text',{x:labelW+w+6,y:y+barH/2+4,'font-size':11,'font-weight':600,fill:cssColor('--ink-1')},svg); r.textContent=fmt(d.value,opts.fmt);
     const hit=el('rect',{class:'hit',x:0,y:padT+i*rowH,width:W,height:rowH},svg);
@@ -266,7 +269,7 @@ function render(){
   teams.sort((a,b)=>b.value-a.value); const capped=teams.length>TEAM_CAP; if(capped)teams=teams.slice(0,TEAM_CAP);
   document.getElementById('rank-title').textContent=U().rank_prefix+mk.label;
   document.getElementById('rank-desc').textContent=U().rank_desc(capped,TEAM_CAP,MIN_GAMES,!!mk.denom);
-  hBar('c-team',teams.map(t=>({name:t.name,value:t.value,tip:CFG.tooltip(t.c)})),{fmt:mk.fmt,title:mk.label,labelW:150});
+  hBar('c-team',teams.map(t=>({name:t.name,value:t.value,tip:CFG.tooltip(t.c)})),{fmt:mk.fmt,title:mk.label,labelW:150,teamLogos:true});
   const compRows=tFilt({comp:true}); const compMap=accumTeam(compRows,r=>RAW.comps[r[0]]);
   let comps=[...compMap.entries()].map(([name,c])=>({name,value:mk.val(c),c})); comps.sort((a,b)=>b.value-a.value);
   document.getElementById('comp-title').textContent=U().comp_prefix+mk.label;

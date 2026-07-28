@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="team-logos.js"></script>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 :root { color-scheme: dark;
@@ -331,8 +332,9 @@ function render(){
   const teamB = Number(v('f-team-b')), playerB = v('f-player-b');
   if(playerA==='' || playerB===''){ content.innerHTML = `<div class="empty">${U().empty}</div>`; return; }
   const pA = Number(playerA), pB = Number(playerB);
-  document.getElementById('name-a').textContent = RAW.players[pA];
-  document.getElementById('name-b').textContent = RAW.players[pB];
+  const logoA = teamLogoSrc(RAW.teams[teamA]), logoB = teamLogoSrc(RAW.teams[teamB]);
+  document.getElementById('name-a').innerHTML = (logoA?`<img src="${logoA}" alt="" style="height:18px;vertical-align:-3px;margin-right:6px">`:'') + RAW.players[pA];
+  document.getElementById('name-b').innerHTML = (logoB?`<img src="${logoB}" alt="" style="height:18px;vertical-align:-3px;margin-right:6px">`:'') + RAW.players[pB];
   const posA = RAW.playerPos[pA], posB = RAW.playerPos[pB];
   document.getElementById('pos-a').textContent = posA || '';
   document.getElementById('pos-b').textContent = posB || '';

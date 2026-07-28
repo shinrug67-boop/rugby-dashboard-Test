@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="team-logos.js"></script>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 :root { color-scheme: dark;
@@ -250,11 +251,12 @@ async function render(){
 
   content.replaceChildren();
   const score = document.createElement('div'); score.className='scorewrap';
+  const homeLogo = teamLogoSrc(home), awayLogo = teamLogoSrc(away);
   score.innerHTML = `
     <div class="scorebox">${fx.ft_h}</div>
-    <div class="side"><div class="team">${home}</div><div class="gl">${U().gainline} ${homeGL.toFixed(0)}%</div></div>
+    <div class="side">${homeLogo?`<img src="${homeLogo}" alt="" style="height:32px">`:''}<div class="team">${home}</div><div class="gl">${U().gainline} ${homeGL.toFixed(0)}%</div></div>
     <div class="vs">${U().vs}</div>
-    <div class="side"><div class="team">${away}</div><div class="gl">${U().gainline} ${awayGL.toFixed(0)}%</div></div>
+    <div class="side">${awayLogo?`<img src="${awayLogo}" alt="" style="height:32px">`:''}<div class="team">${away}</div><div class="gl">${U().gainline} ${awayGL.toFixed(0)}%</div></div>
     <div class="scorebox">${fx.ft_a}</div>`;
   content.appendChild(score);
 
