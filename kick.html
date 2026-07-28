@@ -113,6 +113,7 @@ footer { margin-top:16px; font-size:12px; color:var(--ink-muted); }
     <a href="defense.html" id="nav-defense">ディフェンス</a>
     <a href="setpiece.html" id="nav-setpiece">FWセットプレー</a>
     <a href="game.html" id="nav-game">試合サマリー</a>
+    <a href="compare.html" id="nav-compare">選手比較</a>
   </div>
   <span class="spacer"></span>
   <button id="logout-btn" type="button"></button>
@@ -220,7 +221,7 @@ const UI = {
   ja:{ doctitle:'コンテストキック ダッシュボード — 全コンペティション',
     page_title:'コンテストキック ダッシュボード — 全コンペティション',
     page_sub:'7コンペティション・1,493試合・26,756本(2024〜2026シーズン) | 定義: Kick × Kick in Play / Kick in Play (Own 22) × Box / Bomb | 結果分類は Stats Perform BI Event Data 2.0.0 Table 31 準拠',
-    nav_home:'ホーム', nav_kick:'キック', nav_attack:'アタック', nav_defense:'ディフェンス', nav_setpiece:'FWセットプレー', nav_game:'試合サマリー',
+    nav_home:'ホーム', nav_kick:'キック', nav_attack:'アタック', nav_defense:'ディフェンス', nav_setpiece:'FWセットプレー', nav_game:'試合サマリー', nav_compare:'選手比較',
     logout_btn:'ログアウト',
     f_comp:'コンペティション', f_season:'シーズン', f_round:'ラウンド', f_team:'チーム', f_type:'キック種類',
     all_comp:'全コンペ', all_season:'全シーズン', all_round:'全節', all_team:'全チーム',
@@ -242,7 +243,7 @@ const UI = {
   en:{ doctitle:'Contestable Kick Dashboard — All Competitions',
     page_title:'Contestable Kick Dashboard — All Competitions',
     page_sub:'7 competitions · 1,493 matches · 26,756 kicks (2024–2026 seasons) | Definition: Kick × (Kick in Play / Kick in Play (Own 22)) × (Box / Bomb) | Outcome categories per Stats Perform BI Event Data 2.0.0 Table 31',
-    nav_home:'Home', nav_kick:'Kicking', nav_attack:'Attack', nav_defense:'Defense', nav_setpiece:'Set Piece', nav_game:'Game Summary',
+    nav_home:'Home', nav_kick:'Kicking', nav_attack:'Attack', nav_defense:'Defense', nav_setpiece:'Set Piece', nav_game:'Game Summary', nav_compare:'Player Compare',
     logout_btn:'Sign out',
     f_comp:'Competition', f_season:'Season', f_round:'Round', f_team:'Team', f_type:'Kick type',
     all_comp:'All competitions', all_season:'All seasons', all_round:'All rounds', all_team:'All teams',
@@ -671,6 +672,7 @@ function setStaticChrome(){
   document.getElementById('nav-defense').textContent = U().nav_defense;
   document.getElementById('nav-setpiece').textContent = U().nav_setpiece;
   document.getElementById('nav-game').textContent = U().nav_game;
+  document.getElementById('nav-compare').textContent = U().nav_compare;
   document.getElementById('lbl-comp').textContent = U().f_comp;
   document.getElementById('lbl-season').textContent = U().f_season;
   document.getElementById('lbl-round').textContent = U().f_round;
