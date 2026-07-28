@@ -144,7 +144,7 @@ const CFG_JA = {
   teamCols:[['name','チーム','txt'],['gp','試合','int'],['carries','キャリー/試合','f1'],['cm','獲得m/試合','f1'],['mpc','m/キャリー','f2'],['post','ポスト接触m/キャリー','f2'],['gl','ゲインライン%','pct'],['dom','ドミナント%','pct'],['db','突破/試合','f1'],['lb','ラインブレイク/試合','f1'],['off','オフロード/試合','f1'],['offp','オフロード成功%','pct'],['e22','22m/試合','f1'],['e22c','22m→得点%','pct'],['tries','トライ/試合','f1']],
   teamRow:(name,c)=>({name,gp:c.__m,carries:c.__m?c.carries/c.__m:0,cm:c.__m?c.carry_distplus/c.__m:0,mpc:c.carries?c.carry_distplus/c.carries:0,post:c.carries?c.carry_post/c.carries:0,gl:c.carries?c.gainline/c.carries*100:0,dom:c.carries?c.dominant/c.carries*100:0,db:c.__m?c.def_beaten/c.__m:0,lb:c.__m?c.linebreak/c.__m:0,off:c.__m?c.offload/c.__m:0,offp:c.offload?c.offload_success/c.offload*100:0,e22:c.__m?c.entry22/c.__m:0,e22c:c.entry22?c.entry22_points/c.entry22*100:0,tries:c.__m?c.tries/c.__m:0}),
   player:{ minKey:'gp', min:5, minLabel:'出場', cap:200,
-    cols:[['name','選手','txt'],['team','チーム','txt'],['gp','出場','int'],['carries','キャリー/試合','f1'],['cm','獲得m/試合','f1'],['mpc','m/キャリー','f2'],['gl','ゲインライン%','pct'],['db','突破/試合','f1'],['lb','ラインブレイク/試合','f1'],['off','オフロード/試合','f1'],['tries','トライ/試合','f1']],
+    cols:[['name','選手','txt'],['gp','出場','int'],['carries','キャリー/試合','f1'],['cm','獲得m/試合','f1'],['mpc','m/キャリー','f2'],['gl','ゲインライン%','pct'],['db','突破/試合','f1'],['lb','ラインブレイク/試合','f1'],['off','オフロード/試合','f1'],['tries','トライ/試合','f1']],
     row:(name,team,c,gp)=>({name,team,gp,__min:gp,carries:gp?c.carries/gp:0,cm:gp?c.carry_distplus/gp:0,mpc:c.carries?c.carry_distplus/c.carries:0,gl:c.carries?c.gainline/c.carries*100:0,db:gp?c.def_beaten/gp:0,lb:gp?c.linebreak/gp:0,off:gp?c.offload/gp:0,tries:gp?c.tries/gp:0}) }
 };
 const CFG_EN = {
@@ -179,7 +179,7 @@ const CFG_EN = {
   teamCols:[['name','Team','txt'],['gp','GP','int'],['carries','Carries/match','f1'],['cm','Metres/match','f1'],['mpc','m/carry','f2'],['post','Post-contact m/carry','f2'],['gl','Gainline%','pct'],['dom','Dominant%','pct'],['db','Beaten/match','f1'],['lb','Line breaks/match','f1'],['off','Offloads/match','f1'],['offp','Offload success%','pct'],['e22','22m/match','f1'],['e22c','22m→pts%','pct'],['tries','Tries/match','f1']],
   teamRow:(name,c)=>({name,gp:c.__m,carries:c.__m?c.carries/c.__m:0,cm:c.__m?c.carry_distplus/c.__m:0,mpc:c.carries?c.carry_distplus/c.carries:0,post:c.carries?c.carry_post/c.carries:0,gl:c.carries?c.gainline/c.carries*100:0,dom:c.carries?c.dominant/c.carries*100:0,db:c.__m?c.def_beaten/c.__m:0,lb:c.__m?c.linebreak/c.__m:0,off:c.__m?c.offload/c.__m:0,offp:c.offload?c.offload_success/c.offload*100:0,e22:c.__m?c.entry22/c.__m:0,e22c:c.entry22?c.entry22_points/c.entry22*100:0,tries:c.__m?c.tries/c.__m:0}),
   player:{ minKey:'gp', min:5, minLabel:'caps', cap:200,
-    cols:[['name','Player','txt'],['team','Team','txt'],['gp','Caps','int'],['carries','Carries/match','f1'],['cm','Metres/match','f1'],['mpc','m/carry','f2'],['gl','Gainline%','pct'],['db','Beaten/match','f1'],['lb','Line breaks/match','f1'],['off','Offloads/match','f1'],['tries','Tries/match','f1']],
+    cols:[['name','Player','txt'],['gp','Caps','int'],['carries','Carries/match','f1'],['cm','Metres/match','f1'],['mpc','m/carry','f2'],['gl','Gainline%','pct'],['db','Beaten/match','f1'],['lb','Line breaks/match','f1'],['off','Offloads/match','f1'],['tries','Tries/match','f1']],
     row:(name,team,c,gp)=>({name,team,gp,__min:gp,carries:gp?c.carries/gp:0,cm:gp?c.carry_distplus/gp:0,mpc:c.carries?c.carry_distplus/c.carries:0,gl:c.carries?c.gainline/c.carries*100:0,db:gp?c.def_beaten/gp:0,lb:gp?c.linebreak/gp:0,off:gp?c.offload/gp:0,tries:gp?c.tries/gp:0}) }
 };
 const UI = {
@@ -284,14 +284,17 @@ function renderPlayerTable(){
   const eligible=data.filter(d=>d.__min>=CFG.player.min); data=eligible; data.sort((a,b)=>cmp(a,b,sortP));
   const cap=CFG.player.cap||200; const capped=data.length>cap; data=data.slice(0,cap);
   document.getElementById('ptbl-desc').textContent=U().player_desc(CFG.player.min,eligible.length,capped,cap);
-  drawTable('ptbl',CFG.player.cols,data,sortP,(col)=>{ if(sortP.col===col)sortP.dir=sortP.dir==='asc'?'desc':'asc'; else sortP={col,dir:CFG.player.cols.find(c=>c[0]===col)[2]==='txt'?'asc':'desc'}; render(); });
+  drawTable('ptbl',CFG.player.cols,data,sortP,(col)=>{ if(sortP.col===col)sortP.dir=sortP.dir==='asc'?'desc':'asc'; else sortP={col,dir:CFG.player.cols.find(c=>c[0]===col)[2]==='txt'?'asc':'desc'}; render(); },{nameLogo:true});
 }
 function cmp(a,b,st){ const x=a[st.col],y=b[st.col]; const c=x<y?-1:x>y?1:0; return st.dir==='asc'?c:-c; }
-function drawTable(id,cols,data,st,onSort){ data.sort((a,b)=>cmp(a,b,st)); const wrap=document.getElementById(id); wrap.replaceChildren();
+function drawTable(id,cols,data,st,onSort,opts){ data.sort((a,b)=>cmp(a,b,st)); const wrap=document.getElementById(id); wrap.replaceChildren();
   const table=document.createElement('table'); const thead=document.createElement('thead'); const hr=document.createElement('tr');
   cols.forEach(([k,l,t])=>{ const th=document.createElement('th'); th.textContent=l+(st.col===k?(st.dir==='asc'?' ▲':' ▼'):''); if(t==='txt')th.style.textAlign='left'; th.addEventListener('click',()=>onSort(k)); hr.appendChild(th); });
   thead.appendChild(hr); table.appendChild(thead); const tb=document.createElement('tbody');
-  data.forEach(row=>{ const tr=document.createElement('tr'); cols.forEach(([k,l,t])=>{ const td=document.createElement('td'); const val=row[k]; if(t==='txt'){td.className='txt'; td.textContent=val;} else td.textContent=fmt(val,t); tr.appendChild(td); }); tb.appendChild(tr); });
+  data.forEach(row=>{ const tr=document.createElement('tr'); cols.forEach(([k,l,t])=>{ const td=document.createElement('td'); const val=row[k]; if(t==='txt'){td.className='txt';
+      if(opts&&opts.nameLogo&&k==='name'){ const src=teamLogoSrc(row.team); td.innerHTML=(src?`<img src="${src}" alt="" style="height:15px;vertical-align:-3px;margin-right:5px">`:'')+val; }
+      else td.textContent=val;
+    } else td.textContent=fmt(val,t); tr.appendChild(td); }); tb.appendChild(tr); });
   table.appendChild(tb); wrap.appendChild(table); }
 function repop(sel,values,current,allLabel){ const s=document.getElementById(sel); s.replaceChildren(); const a=document.createElement('option'); a.value='all'; a.textContent=allLabel; s.appendChild(a);
   values.forEach(v=>{ const o=document.createElement('option'); o.value=String(v); o.textContent=String(v); s.appendChild(o); }); s.value=values.map(String).includes(current)?current:'all'; }

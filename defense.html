@@ -138,7 +138,7 @@ const CFG_JA = {
   teamCols:[['name','チーム','txt'],['gp','試合','int'],['tackles','タックル/試合','f1'],['succ','成功率%','pct'],['dom','ドミナント%','pct'],['missed','ミス/試合','f1'],['jackal','ジャッカル/試合','f1'],['jackalp','ジャッカル成功%','pct'],['towon','タックルTO/試合','f1'],['toc','被TO/試合','f1']],
   teamRow:(name,c)=>{var s=c.tk_complete+c.tk_passive+c.tk_sack+c.tk_forced_touch+c.tk_try_saver+c.tk_turnover_won+c.tk_offload_allowed+c.tk_pen_conceded; return {name,gp:c.__m,tackles:c.__m?c.tackles/c.__m:0,succ:c.tackles?s/c.tackles*100:0,dom:c.tackles?c.tk_dominant/c.tackles*100:0,missed:c.__m?c.tk_missed/c.__m:0,jackal:c.__m?c.jackal/c.__m:0,jackalp:c.jackal?c.jackal_won/c.jackal*100:0,towon:c.__m?c.tk_turnover_won/c.__m:0,toc:c.__m?c.to_conceded/c.__m:0};},
   player:{ minKey:'gp', min:5, minLabel:'出場', cap:200,
-    cols:[['name','選手','txt'],['team','チーム','txt'],['gp','出場','int'],['tackles','タックル/試合','f1'],['succ','成功率%','pct'],['missed','ミス/試合','f1'],['jackal','ジャッカル/試合','f1'],['dom','ドミナント/試合','f1']],
+    cols:[['name','選手','txt'],['gp','出場','int'],['tackles','タックル/試合','f1'],['succ','成功率%','pct'],['missed','ミス/試合','f1'],['jackal','ジャッカル/試合','f1'],['dom','ドミナント/試合','f1']],
     row:(name,team,c,gp)=>({name,team,gp,__min:gp,tackles:gp?c.tackles/gp:0,succ:c.tackles?(c.tk_suc+c.tk_ineff)/c.tackles*100:0,missed:gp?c.tk_missed/gp:0,jackal:gp?c.jackal/gp:0,dom:gp?c.tk_dominant/gp:0}) }
 };
 const CFG_EN = {
@@ -167,7 +167,7 @@ const CFG_EN = {
   teamCols:[['name','Team','txt'],['gp','GP','int'],['tackles','Tackles/match','f1'],['succ','Success%','pct'],['dom','Dominant%','pct'],['missed','Missed/match','f1'],['jackal','Jackals/match','f1'],['jackalp','Jackal success%','pct'],['towon','Tackle TO/match','f1'],['toc','TO conceded/match','f1']],
   teamRow:(name,c)=>{var s=c.tk_complete+c.tk_passive+c.tk_sack+c.tk_forced_touch+c.tk_try_saver+c.tk_turnover_won+c.tk_offload_allowed+c.tk_pen_conceded; return {name,gp:c.__m,tackles:c.__m?c.tackles/c.__m:0,succ:c.tackles?s/c.tackles*100:0,dom:c.tackles?c.tk_dominant/c.tackles*100:0,missed:c.__m?c.tk_missed/c.__m:0,jackal:c.__m?c.jackal/c.__m:0,jackalp:c.jackal?c.jackal_won/c.jackal*100:0,towon:c.__m?c.tk_turnover_won/c.__m:0,toc:c.__m?c.to_conceded/c.__m:0};},
   player:{ minKey:'gp', min:5, minLabel:'caps', cap:200,
-    cols:[['name','Player','txt'],['team','Team','txt'],['gp','Caps','int'],['tackles','Tackles/match','f1'],['succ','Success%','pct'],['missed','Missed/match','f1'],['jackal','Jackals/match','f1'],['dom','Dominant/match','f1']],
+    cols:[['name','Player','txt'],['gp','Caps','int'],['tackles','Tackles/match','f1'],['succ','Success%','pct'],['missed','Missed/match','f1'],['jackal','Jackals/match','f1'],['dom','Dominant/match','f1']],
     row:(name,team,c,gp)=>({name,team,gp,__min:gp,tackles:gp?c.tackles/gp:0,succ:c.tackles?(c.tk_suc+c.tk_ineff)/c.tackles*100:0,missed:gp?c.tk_missed/gp:0,jackal:gp?c.jackal/gp:0,dom:gp?c.tk_dominant/gp:0}) }
 };
 const UI = {
@@ -272,14 +272,17 @@ function renderPlayerTable(){
   const eligible=data.filter(d=>d.__min>=CFG.player.min); data=eligible; data.sort((a,b)=>cmp(a,b,sortP));
   const cap=CFG.player.cap||200; const capped=data.length>cap; data=data.slice(0,cap);
   document.getElementById('ptbl-desc').textContent=U().player_desc(CFG.player.min,eligible.length,capped,cap);
-  drawTable('ptbl',CFG.player.cols,data,sortP,(col)=>{ if(sortP.col===col)sortP.dir=sortP.dir==='asc'?'desc':'asc'; else sortP={col,dir:CFG.player.cols.find(c=>c[0]===col)[2]==='txt'?'asc':'desc'}; render(); });
+  drawTable('ptbl',CFG.player.cols,data,sortP,(col)=>{ if(sortP.col===col)sortP.dir=sortP.dir==='asc'?'desc':'asc'; else sortP={col,dir:CFG.player.cols.find(c=>c[0]===col)[2]==='txt'?'asc':'desc'}; render(); },{nameLogo:true});
 }
 function cmp(a,b,st){ const x=a[st.col],y=b[st.col]; const c=x<y?-1:x>y?1:0; return st.dir==='asc'?c:-c; }
-function drawTable(id,cols,data,st,onSort){ data.sort((a,b)=>cmp(a,b,st)); const wrap=document.getElementById(id); wrap.replaceChildren();
+function drawTable(id,cols,data,st,onSort,opts){ data.sort((a,b)=>cmp(a,b,st)); const wrap=document.getElementById(id); wrap.replaceChildren();
   const table=document.createElement('table'); const thead=document.createElement('thead'); const hr=document.createElement('tr');
   cols.forEach(([k,l,t])=>{ const th=document.createElement('th'); th.textContent=l+(st.col===k?(st.dir==='asc'?' ▲':' ▼'):''); if(t==='txt')th.style.textAlign='left'; th.addEventListener('click',()=>onSort(k)); hr.appendChild(th); });
   thead.appendChild(hr); table.appendChild(thead); const tb=document.createElement('tbody');
-  data.forEach(row=>{ const tr=document.createElement('tr'); cols.forEach(([k,l,t])=>{ const td=document.createElement('td'); const val=row[k]; if(t==='txt'){td.className='txt'; td.textContent=val;} else td.textContent=fmt(val,t); tr.appendChild(td); }); tb.appendChild(tr); });
+  data.forEach(row=>{ const tr=document.createElement('tr'); cols.forEach(([k,l,t])=>{ const td=document.createElement('td'); const val=row[k]; if(t==='txt'){td.className='txt';
+      if(opts&&opts.nameLogo&&k==='name'){ const src=teamLogoSrc(row.team); td.innerHTML=(src?`<img src="${src}" alt="" style="height:15px;vertical-align:-3px;margin-right:5px">`:'')+val; }
+      else td.textContent=val;
+    } else td.textContent=fmt(val,t); tr.appendChild(td); }); tb.appendChild(tr); });
   table.appendChild(tb); wrap.appendChild(table); }
 function repop(sel,values,current,allLabel){ const s=document.getElementById(sel); s.replaceChildren(); const a=document.createElement('option'); a.value='all'; a.textContent=allLabel; s.appendChild(a);
   values.forEach(v=>{ const o=document.createElement('option'); o.value=String(v); o.textContent=String(v); s.appendChild(o); }); s.value=values.map(String).includes(current)?current:'all'; }
