@@ -4,61 +4,58 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Rugby Analytics — 分析ハブ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 :root {
-  color-scheme: light;
-  --page:#f9f9f7; --surface:#fcfcfb;
-  --ink-1:#0b0b0b; --ink-2:#52514e; --ink-muted:#898781;
-  --border:rgba(11,11,11,0.10); --accent:#2a78d6; --radius:10px; --chip:#eef2f6;
+  color-scheme: dark;
+  --page:#08080a; --surface:#14141a;
+  --ink-1:#f3f4f6; --ink-2:#c9cdd6; --ink-muted:#a0aec0;
+  --border:rgba(197,160,89,.28); --gold:#c5a059; --red:#ff0b24; --deepred:#6e0007;
+  --accent:#c5a059; --radius:10px; --chip:#1c1c22;
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    color-scheme: dark;
-    --page:#0d0d0d; --surface:#1a1a19;
-    --ink-1:#ffffff; --ink-2:#c3c2b7; --ink-muted:#898781;
-    --border:rgba(255,255,255,0.10); --accent:#3987e5; --chip:#26262a;
-  }
-}
-body { font-family: system-ui, -apple-system, "Segoe UI", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+body { font-family: Montserrat, system-ui, -apple-system, "Segoe UI", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
   background:var(--page); color:var(--ink-1); line-height:1.6; }
 .topnav{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:18px;flex-wrap:wrap;
   background:var(--surface);border-bottom:1px solid var(--border);padding:10px 18px;}
-.topnav .brand{font-weight:700;font-size:15px;color:var(--ink-1);text-decoration:none;white-space:nowrap;}
+.topnav .brand{font-weight:800;font-size:15px;color:var(--gold);text-decoration:none;white-space:nowrap;letter-spacing:.02em;}
 .topnav .navlinks{display:flex;gap:4px;flex-wrap:wrap;}
-.topnav .navlinks a{font-size:13px;color:var(--ink-2);text-decoration:none;padding:6px 12px;border-radius:6px;white-space:nowrap;}
-.topnav .navlinks a:hover{background:color-mix(in srgb,var(--ink-1) 7%,transparent);}
-.topnav .navlinks a.active{background:#2a78d6;color:#fff;}
+.topnav .navlinks a{font-size:13px;color:var(--ink-2);text-decoration:none;padding:6px 12px;border-radius:6px;white-space:nowrap;font-weight:600;}
+.topnav .navlinks a:hover{background:rgba(255,255,255,.06);}
+.topnav .navlinks a.active{background:var(--red);color:#fff;}
 .topnav .spacer{flex:1;}
-#lang-toggle{font-size:12px;font-weight:600;color:var(--ink-2);background:var(--surface);border:1px solid var(--border);
+#lang-toggle{font-size:12px;font-weight:700;color:var(--gold);background:var(--page);border:1px solid var(--border);
   border-radius:6px;padding:5px 11px;cursor:pointer;white-space:nowrap;}
-#lang-toggle:hover{background:color-mix(in srgb,var(--ink-1) 7%,transparent);}
-#logout-btn{font-size:12px;font-weight:600;color:var(--ink-2);background:var(--surface);border:1px solid var(--border);
+#lang-toggle:hover{background:rgba(255,255,255,.06);}
+#logout-btn{font-size:12px;font-weight:700;color:var(--gold);background:var(--page);border:1px solid var(--border);
   border-radius:6px;padding:5px 11px;cursor:pointer;white-space:nowrap;}
-#logout-btn:hover{background:color-mix(in srgb,var(--ink-1) 7%,transparent);}
+#logout-btn:hover{background:rgba(255,255,255,.06);}
 .wrap { max-width:1100px; margin:0 auto; padding:34px 20px 48px; }
-.hero h1 { font-size:30px; font-weight:750; letter-spacing:.2px; }
+.hero h1 { font-size:30px; font-weight:900; letter-spacing:.2px; color:var(--gold); text-shadow:0 4px 18px rgba(0,0,0,.5); }
 .hero p { color:var(--ink-2); margin-top:8px; max-width:680px; font-size:14.5px; }
 .stats { display:flex; gap:26px; flex-wrap:wrap; margin:22px 0 4px; }
-.stat .n { font-size:26px; font-weight:700; }
+.stat .n { font-size:26px; font-weight:800; color:var(--gold); }
 .stat .l { font-size:12px; color:var(--ink-muted); }
-.sec-h { font-size:13px; font-weight:700; color:var(--ink-muted); text-transform:uppercase; letter-spacing:.6px; margin:30px 0 12px; }
+.sec-h { font-size:13px; font-weight:700; color:var(--ink-2); text-transform:uppercase; letter-spacing:.6px; margin:30px 0 12px;
+  border-left:4px solid var(--red); padding-left:10px; }
 .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:16px; }
 .tile { display:flex; flex-direction:column; text-decoration:none; color:inherit; background:var(--surface);
-  border:1px solid var(--border); border-radius:var(--radius); padding:20px 22px; transition:transform .08s, box-shadow .12s, border-color .12s; }
-a.tile:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,0,0,0.10); border-color:var(--accent); }
+  border:1px solid var(--border); border-top:3px solid var(--red); border-radius:var(--radius); padding:20px 22px; transition:transform .08s, box-shadow .12s, border-color .12s; }
+a.tile:hover { transform:translateY(-2px); box-shadow:0 10px 28px rgba(0,0,0,0.5); border-color:var(--gold); }
 .tile .top { display:flex; align-items:center; gap:10px; }
 .tile .ico { font-size:22px; }
-.tile h2 { font-size:16px; font-weight:650; display:flex; align-items:center; gap:8px; }
+.tile h2 { font-size:16px; font-weight:700; display:flex; align-items:center; gap:8px; }
 .tile .arrow { margin-left:auto; color:var(--ink-muted); font-size:18px; }
 .tile p { font-size:12.5px; color:var(--ink-2); margin:8px 0 12px; }
 .chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:auto; }
-.chip { font-size:11px; color:var(--ink-2); background:var(--chip); border-radius:20px; padding:3px 9px; white-space:nowrap; }
-.badge { font-size:10.5px; padding:2px 7px; border-radius:20px; font-weight:600;
-  background:color-mix(in srgb,var(--accent) 16%,transparent); color:var(--accent); }
+.chip { font-size:11px; color:var(--ink-2); background:var(--chip); border:1px solid var(--border); border-radius:20px; padding:3px 9px; white-space:nowrap; }
+.badge { font-size:10.5px; padding:2px 7px; border-radius:20px; font-weight:700;
+  background:rgba(197,160,89,.16); color:var(--gold); }
 .note { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px 18px; margin-top:16px; font-size:12.5px; color:var(--ink-2); }
-.note b { color:var(--ink-1); }
+.note b { color:var(--gold); }
 footer { margin-top:28px; font-size:12px; color:var(--ink-muted); border-top:1px solid var(--border); padding-top:16px; }
 </style>
 </head>
