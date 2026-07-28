@@ -41,6 +41,7 @@ header .sub { font-size:12.5px; color:var(--ink-2); margin-top:2px; }
 .fg select { padding:6px 10px; font-size:16px; color:var(--ink-1); max-width:230px;
   background:var(--page); border:1px solid #3a3a42; border-radius:6px; }
 .picker { display:grid; grid-template-columns:1fr 1fr; gap:var(--gap); margin:14px 0; }
+.pt-box { min-width:0; }
 .picker .side { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px 16px; min-width:0; }
 .picker .side.a { border-top:3px solid var(--a); }
 .picker .side.b { border-top:3px solid var(--b); }
@@ -345,8 +346,8 @@ function render(){
   const ptCard = section(content, U().sec_time);
   ptCard.appendChild(document.createTextNode(''));
   const ptWrap = document.createElement('div'); ptWrap.className='picker';
-  const boxA = document.createElement('div'); boxA.appendChild(playtimeTable(pA));
-  const boxB = document.createElement('div'); boxB.appendChild(playtimeTable(pB));
+  const boxA = document.createElement('div'); boxA.className='pt-box'; boxA.appendChild(playtimeTable(pA));
+  const boxB = document.createElement('div'); boxB.className='pt-box'; boxB.appendChild(playtimeTable(pB));
   ptWrap.appendChild(boxA); ptWrap.appendChild(boxB);
   ptCard.appendChild(ptWrap);
 
