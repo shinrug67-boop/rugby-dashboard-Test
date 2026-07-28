@@ -39,7 +39,8 @@ header .sub { font-size:12.5px; color:var(--ink-2); margin-top:2px; }
   background:var(--page); border:1px solid #3a3a42; border-radius:6px; }
 .fg select:disabled { opacity:.45; }
 .kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:var(--gap); margin:10px 0 var(--gap); }
-.kpi { background:var(--surface); border:1px solid var(--border); border-top:3px solid var(--red); border-radius:var(--radius); padding:13px 16px; }
+.kpi { background:var(--surface); border:1px solid var(--border); border-top:3px solid var(--red); border-radius:var(--radius); padding:13px 16px; transition:border-top-color .1s; }
+.kpi.active { border-top-color:var(--gold); }
 .kpi .lbl { font-size:12px; color:var(--ink-2); margin-bottom:2px; }
 .kpi .val { font-size:24px; font-weight:800; color:var(--gold); }
 .kpi .note { font-size:11.5px; color:var(--ink-muted); }
@@ -128,12 +129,12 @@ const CFG_JA = {
     {key:'maul_pm',label:'モール/試合',fmt:'f1',val:c=>c.__m?c.maul/c.__m:0}
   ],
   kpis:[
-    {label:'ラインアウト成功率',val:t=>t.lo_total?(t.lo_won/t.lo_total*100).toFixed(1)+'%':'–',note:t=>'自スロー/試合 '+f1(t.__m?t.lo_total/t.__m:0)},
-    {label:'スクラム成功率',val:t=>t.scrum?(t.scrum_won/t.scrum*100).toFixed(1)+'%':'–',note:t=>'自ボール/試合 '+f1(t.__m?t.scrum/t.__m:0)},
-    {label:'ラインアウトスティール/試合',val:t=>f1(t.__m?t.lo_steal/t.__m:0),note:'相手ボール獲得'},
-    {label:'モール成功率',val:t=>t.maul?(t.maul_won/t.maul*100).toFixed(1)+'%':'–',note:t=>'モール/試合 '+f1(t.__m?t.maul/t.__m:0)},
-    {label:'モールトライ/試合',val:t=>f1(t.__m?t.maul_try/t.__m:0),note:'Try Scored+Penalty Try'},
-    {label:'スクラムPK獲得/試合',val:t=>f1(t.__m?t.scrum_pen/t.__m:0),note:t=>t.__m+'試合'}
+    {key:'lo_pct',label:'ラインアウト成功率',val:t=>t.lo_total?(t.lo_won/t.lo_total*100).toFixed(1)+'%':'–',note:t=>'自スロー/試合 '+f1(t.__m?t.lo_total/t.__m:0)},
+    {key:'scrum_pct',label:'スクラム成功率',val:t=>t.scrum?(t.scrum_won/t.scrum*100).toFixed(1)+'%':'–',note:t=>'自ボール/試合 '+f1(t.__m?t.scrum/t.__m:0)},
+    {key:'lo_steal_pm',label:'ラインアウトスティール/試合',val:t=>f1(t.__m?t.lo_steal/t.__m:0),note:'相手ボール獲得'},
+    {key:'maul_pct',label:'モール成功率',val:t=>t.maul?(t.maul_won/t.maul*100).toFixed(1)+'%':'–',note:t=>'モール/試合 '+f1(t.__m?t.maul/t.__m:0)},
+    {key:'maul_try_pm',label:'モールトライ/試合',val:t=>f1(t.__m?t.maul_try/t.__m:0),note:'Try Scored+Penalty Try'},
+    {key:'scrum_pen_pm',label:'スクラムPK獲得/試合',val:t=>f1(t.__m?t.scrum_pen/t.__m:0),note:t=>t.__m+'試合'}
   ],
   tooltip:c=>[['ラインアウト成功',c.lo_total?(c.lo_won/c.lo_total*100).toFixed(0)+'%':'–'],['スクラム成功',c.scrum?(c.scrum_won/c.scrum*100).toFixed(0)+'%':'–'],['LOスティール/試合',f1(c.__m?c.lo_steal/c.__m:0)],['モール成功',c.maul?(c.maul_won/c.maul*100).toFixed(0)+'%':'–'],['モールトライ/試合',f1(c.__m?c.maul_try/c.__m:0)]],
   teamCols:[['name','チーム','txt'],['gp','試合','int'],['scrum','スクラム/試合','f1'],['scrump','スクラム成功%','pct'],['scrumpen','スクラムPK/試合','f1'],['lo','ラインアウト/試合','f1'],['lop','LO成功%','pct'],['steal','LOスティール/試合','f1'],['maul','モール/試合','f1'],['maulp','モール成功%','pct'],['maultry','モールトライ/試合','f1']],
@@ -156,12 +157,12 @@ const CFG_EN = {
     {key:'maul_pm',label:'Mauls / match',fmt:'f1',val:c=>c.__m?c.maul/c.__m:0}
   ],
   kpis:[
-    {label:'Lineout success rate',val:t=>t.lo_total?(t.lo_won/t.lo_total*100).toFixed(1)+'%':'–',note:t=>'Own throws/match '+f1(t.__m?t.lo_total/t.__m:0)},
-    {label:'Scrum success rate',val:t=>t.scrum?(t.scrum_won/t.scrum*100).toFixed(1)+'%':'–',note:t=>'Own ball/match '+f1(t.__m?t.scrum/t.__m:0)},
-    {label:'Lineout steals / match',val:t=>f1(t.__m?t.lo_steal/t.__m:0),note:'Opposition ball won'},
-    {label:'Maul success rate',val:t=>t.maul?(t.maul_won/t.maul*100).toFixed(1)+'%':'–',note:t=>'Mauls/match '+f1(t.__m?t.maul/t.__m:0)},
-    {label:'Maul tries / match',val:t=>f1(t.__m?t.maul_try/t.__m:0),note:'Try Scored+Penalty Try'},
-    {label:'Scrum penalties won / match',val:t=>f1(t.__m?t.scrum_pen/t.__m:0),note:t=>t.__m+' matches'}
+    {key:'lo_pct',label:'Lineout success rate',val:t=>t.lo_total?(t.lo_won/t.lo_total*100).toFixed(1)+'%':'–',note:t=>'Own throws/match '+f1(t.__m?t.lo_total/t.__m:0)},
+    {key:'scrum_pct',label:'Scrum success rate',val:t=>t.scrum?(t.scrum_won/t.scrum*100).toFixed(1)+'%':'–',note:t=>'Own ball/match '+f1(t.__m?t.scrum/t.__m:0)},
+    {key:'lo_steal_pm',label:'Lineout steals / match',val:t=>f1(t.__m?t.lo_steal/t.__m:0),note:'Opposition ball won'},
+    {key:'maul_pct',label:'Maul success rate',val:t=>t.maul?(t.maul_won/t.maul*100).toFixed(1)+'%':'–',note:t=>'Mauls/match '+f1(t.__m?t.maul/t.__m:0)},
+    {key:'maul_try_pm',label:'Maul tries / match',val:t=>f1(t.__m?t.maul_try/t.__m:0),note:'Try Scored+Penalty Try'},
+    {key:'scrum_pen_pm',label:'Scrum penalties won / match',val:t=>f1(t.__m?t.scrum_pen/t.__m:0),note:t=>t.__m+' matches'}
   ],
   tooltip:c=>[['Lineout success',c.lo_total?(c.lo_won/c.lo_total*100).toFixed(0)+'%':'–'],['Scrum success',c.scrum?(c.scrum_won/c.scrum*100).toFixed(0)+'%':'–'],['LO steals/match',f1(c.__m?c.lo_steal/c.__m:0)],['Maul success',c.maul?(c.maul_won/c.maul*100).toFixed(0)+'%':'–'],['Maul tries/match',f1(c.__m?c.maul_try/c.__m:0)]],
   teamCols:[['name','Team','txt'],['gp','GP','int'],['scrum','Scrums/match','f1'],['scrump','Scrum success%','pct'],['scrumpen','Scrum PK/match','f1'],['lo','Lineouts/match','f1'],['lop','LO success%','pct'],['steal','LO steals/match','f1'],['maul','Mauls/match','f1'],['maulp','Maul success%','pct'],['maultry','Maul tries/match','f1']],
@@ -248,7 +249,7 @@ const TEAM_CAP=25;
 function render(){
   const rows=tFilt(); const tot=emptyC(TM); let M=0; rows.forEach(r=>{TM.forEach(m=>tot[m]+=r[tIdx[m]]); M++;}); tot.__m=M;
   const mk=metricByKey(F.metric());
-  CFG.kpis.forEach((k,i)=>{ document.getElementById('kpi'+i).textContent=k.val(tot); const n=document.getElementById('kpi'+i+'n'); if(n)n.textContent=(typeof k.note==='function')?k.note(tot):(k.note||''); });
+  CFG.kpis.forEach((k,i)=>{ document.getElementById('kpi'+i).textContent=k.val(tot); const n=document.getElementById('kpi'+i+'n'); if(n)n.textContent=(typeof k.note==='function')?k.note(tot):(k.note||''); const box=document.getElementById('kpi'+i).closest('.kpi'); if(box) box.classList.toggle('active',k.key===mk.key); });
   const teamMap=accumTeam(rows,r=>RAW.teams[r[3]]);
   let teams=[...teamMap.entries()].map(([name,c])=>({name,c,value:mk.val(c)})).filter(t=>t.c.__m>=MIN_GAMES);
   if(mk.denom){ teams=teams.filter(t=>t.c[mk.denom]>=mk.min); }
@@ -317,7 +318,9 @@ function setStaticChrome(){
 }
 function buildKpis(){
   const kwrap=document.getElementById('kpis'); kwrap.replaceChildren();
-  CFG.kpis.forEach((k,i)=>{ const d=document.createElement('div'); d.className='kpi'; d.innerHTML=`<div class="lbl"></div><div class="val" id="kpi${i}">–</div><div class="note" id="kpi${i}n"></div>`; d.querySelector('.lbl').textContent=k.label; kwrap.appendChild(d); });
+  CFG.kpis.forEach((k,i)=>{ const d=document.createElement('div'); d.className='kpi'; d.innerHTML=`<div class="lbl"></div><div class="val" id="kpi${i}">–</div><div class="note" id="kpi${i}n"></div>`; d.querySelector('.lbl').textContent=k.label;
+    if(k.key){ d.style.cursor='pointer'; d.addEventListener('click',()=>{ document.getElementById('f-metric').value=k.key; render(); }); }
+    kwrap.appendChild(d); });
 }
 function populateMetricSelect(){
   const ms=document.getElementById('f-metric'); const prev=ms.value; ms.replaceChildren();

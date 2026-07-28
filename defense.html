@@ -39,7 +39,8 @@ header .sub { font-size:12.5px; color:var(--ink-2); margin-top:2px; }
   background:var(--page); border:1px solid #3a3a42; border-radius:6px; }
 .fg select:disabled { opacity:.45; }
 .kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:var(--gap); margin:10px 0 var(--gap); }
-.kpi { background:var(--surface); border:1px solid var(--border); border-top:3px solid var(--red); border-radius:var(--radius); padding:13px 16px; }
+.kpi { background:var(--surface); border:1px solid var(--border); border-top:3px solid var(--red); border-radius:var(--radius); padding:13px 16px; transition:border-top-color .1s; }
+.kpi.active { border-top-color:var(--gold); }
 .kpi .lbl { font-size:12px; color:var(--ink-2); margin-bottom:2px; }
 .kpi .val { font-size:24px; font-weight:800; color:var(--gold); }
 .kpi .note { font-size:11.5px; color:var(--ink-muted); }
@@ -127,12 +128,12 @@ const CFG_JA = {
     {key:'to_conceded_pm',label:'被ターンオーバー/試合',fmt:'f1',val:c=>c.__m?c.to_conceded/c.__m:0}
   ],
   kpis:[
-    {label:'タックル/試合',val:t=>f1(t.__m?t.tackles/t.__m:0),note:t=>t.__m+'試合'},
-    {label:'タックル成功率',val:t=>{var s=t.tk_complete+t.tk_passive+t.tk_sack+t.tk_forced_touch+t.tk_try_saver+t.tk_turnover_won+t.tk_offload_allowed+t.tk_pen_conceded; return t.tackles?(s/t.tackles*100).toFixed(1)+'%':'–';},note:'Missed/Ineffective除く'},
-    {label:'ドミナントタックル率',val:t=>t.tackles?(t.tk_dominant/t.tackles*100).toFixed(1)+'%':'–',note:t=>'ドミナント/試合 '+f1(t.__m?t.tk_dominant/t.__m:0)},
-    {label:'ミスタックル/試合',val:t=>f1(t.__m?t.tk_missed/t.__m:0),note:'Missed Tackle'},
-    {label:'ジャッカル/試合',val:t=>f1(t.__m?t.jackal/t.__m:0),note:t=>'成功率 '+(t.jackal?(t.jackal_won/t.jackal*100).toFixed(0)+'%':'–')},
-    {label:'被ターンオーバー/試合',val:t=>f1(t.__m?t.to_conceded/t.__m:0),note:t=>'タックルTO獲得/試合 '+f1(t.__m?t.tk_turnover_won/t.__m:0)}
+    {key:'tackles_pm',label:'タックル/試合',val:t=>f1(t.__m?t.tackles/t.__m:0),note:t=>t.__m+'試合'},
+    {key:'tackle_pct',label:'タックル成功率',val:t=>{var s=t.tk_complete+t.tk_passive+t.tk_sack+t.tk_forced_touch+t.tk_try_saver+t.tk_turnover_won+t.tk_offload_allowed+t.tk_pen_conceded; return t.tackles?(s/t.tackles*100).toFixed(1)+'%':'–';},note:'Missed/Ineffective除く'},
+    {key:'dom_pct',label:'ドミナントタックル率',val:t=>t.tackles?(t.tk_dominant/t.tackles*100).toFixed(1)+'%':'–',note:t=>'ドミナント/試合 '+f1(t.__m?t.tk_dominant/t.__m:0)},
+    {key:'missed_pm',label:'ミスタックル/試合',val:t=>f1(t.__m?t.tk_missed/t.__m:0),note:'Missed Tackle'},
+    {key:'jackal_pm',label:'ジャッカル/試合',val:t=>f1(t.__m?t.jackal/t.__m:0),note:t=>'成功率 '+(t.jackal?(t.jackal_won/t.jackal*100).toFixed(0)+'%':'–')},
+    {key:'to_conceded_pm',label:'被ターンオーバー/試合',val:t=>f1(t.__m?t.to_conceded/t.__m:0),note:t=>'タックルTO獲得/試合 '+f1(t.__m?t.tk_turnover_won/t.__m:0)}
   ],
   tooltip:c=>{var s=c.tk_complete+c.tk_passive+c.tk_sack+c.tk_forced_touch+c.tk_try_saver+c.tk_turnover_won+c.tk_offload_allowed+c.tk_pen_conceded; return [['タックル/試合',f1(c.__m?c.tackles/c.__m:0)],['成功率',c.tackles?(s/c.tackles*100).toFixed(0)+'%':'–'],['ドミナント/試合',f1(c.__m?c.tk_dominant/c.__m:0)],['ミス/試合',f1(c.__m?c.tk_missed/c.__m:0)],['ジャッカル/試合',f1(c.__m?c.jackal/c.__m:0)],['被TO/試合',f1(c.__m?c.to_conceded/c.__m:0)]];},
   teamCols:[['name','チーム','txt'],['gp','試合','int'],['tackles','タックル/試合','f1'],['succ','成功率%','pct'],['dom','ドミナント%','pct'],['missed','ミス/試合','f1'],['jackal','ジャッカル/試合','f1'],['jackalp','ジャッカル成功%','pct'],['towon','タックルTO/試合','f1'],['toc','被TO/試合','f1']],
@@ -156,12 +157,12 @@ const CFG_EN = {
     {key:'to_conceded_pm',label:'Turnovers conceded / match',fmt:'f1',val:c=>c.__m?c.to_conceded/c.__m:0}
   ],
   kpis:[
-    {label:'Tackles / match',val:t=>f1(t.__m?t.tackles/t.__m:0),note:t=>t.__m+' matches'},
-    {label:'Tackle success rate',val:t=>{var s=t.tk_complete+t.tk_passive+t.tk_sack+t.tk_forced_touch+t.tk_try_saver+t.tk_turnover_won+t.tk_offload_allowed+t.tk_pen_conceded; return t.tackles?(s/t.tackles*100).toFixed(1)+'%':'–';},note:'Excludes Missed/Ineffective'},
-    {label:'Dominant tackle rate',val:t=>t.tackles?(t.tk_dominant/t.tackles*100).toFixed(1)+'%':'–',note:t=>'Dominant/match '+f1(t.__m?t.tk_dominant/t.__m:0)},
-    {label:'Missed tackles / match',val:t=>f1(t.__m?t.tk_missed/t.__m:0),note:'Missed Tackle'},
-    {label:'Jackals / match',val:t=>f1(t.__m?t.jackal/t.__m:0),note:t=>'Success rate '+(t.jackal?(t.jackal_won/t.jackal*100).toFixed(0)+'%':'–')},
-    {label:'Turnovers conceded / match',val:t=>f1(t.__m?t.to_conceded/t.__m:0),note:t=>'Tackle TO won/match '+f1(t.__m?t.tk_turnover_won/t.__m:0)}
+    {key:'tackles_pm',label:'Tackles / match',val:t=>f1(t.__m?t.tackles/t.__m:0),note:t=>t.__m+' matches'},
+    {key:'tackle_pct',label:'Tackle success rate',val:t=>{var s=t.tk_complete+t.tk_passive+t.tk_sack+t.tk_forced_touch+t.tk_try_saver+t.tk_turnover_won+t.tk_offload_allowed+t.tk_pen_conceded; return t.tackles?(s/t.tackles*100).toFixed(1)+'%':'–';},note:'Excludes Missed/Ineffective'},
+    {key:'dom_pct',label:'Dominant tackle rate',val:t=>t.tackles?(t.tk_dominant/t.tackles*100).toFixed(1)+'%':'–',note:t=>'Dominant/match '+f1(t.__m?t.tk_dominant/t.__m:0)},
+    {key:'missed_pm',label:'Missed tackles / match',val:t=>f1(t.__m?t.tk_missed/t.__m:0),note:'Missed Tackle'},
+    {key:'jackal_pm',label:'Jackals / match',val:t=>f1(t.__m?t.jackal/t.__m:0),note:t=>'Success rate '+(t.jackal?(t.jackal_won/t.jackal*100).toFixed(0)+'%':'–')},
+    {key:'to_conceded_pm',label:'Turnovers conceded / match',val:t=>f1(t.__m?t.to_conceded/t.__m:0),note:t=>'Tackle TO won/match '+f1(t.__m?t.tk_turnover_won/t.__m:0)}
   ],
   tooltip:c=>{var s=c.tk_complete+c.tk_passive+c.tk_sack+c.tk_forced_touch+c.tk_try_saver+c.tk_turnover_won+c.tk_offload_allowed+c.tk_pen_conceded; return [['Tackles/match',f1(c.__m?c.tackles/c.__m:0)],['Success rate',c.tackles?(s/c.tackles*100).toFixed(0)+'%':'–'],['Dominant/match',f1(c.__m?c.tk_dominant/c.__m:0)],['Missed/match',f1(c.__m?c.tk_missed/c.__m:0)],['Jackals/match',f1(c.__m?c.jackal/c.__m:0)],['TO conceded/match',f1(c.__m?c.to_conceded/c.__m:0)]];},
   teamCols:[['name','Team','txt'],['gp','GP','int'],['tackles','Tackles/match','f1'],['succ','Success%','pct'],['dom','Dominant%','pct'],['missed','Missed/match','f1'],['jackal','Jackals/match','f1'],['jackalp','Jackal success%','pct'],['towon','Tackle TO/match','f1'],['toc','TO conceded/match','f1']],
@@ -250,7 +251,7 @@ const TEAM_CAP=25;
 function render(){
   const rows=tFilt(); const tot=emptyC(TM); let M=0; rows.forEach(r=>{TM.forEach(m=>tot[m]+=r[tIdx[m]]); M++;}); tot.__m=M;
   const mk=metricByKey(F.metric());
-  CFG.kpis.forEach((k,i)=>{ document.getElementById('kpi'+i).textContent=k.val(tot); const n=document.getElementById('kpi'+i+'n'); if(n)n.textContent=(typeof k.note==='function')?k.note(tot):(k.note||''); });
+  CFG.kpis.forEach((k,i)=>{ document.getElementById('kpi'+i).textContent=k.val(tot); const n=document.getElementById('kpi'+i+'n'); if(n)n.textContent=(typeof k.note==='function')?k.note(tot):(k.note||''); const box=document.getElementById('kpi'+i).closest('.kpi'); if(box) box.classList.toggle('active',k.key===mk.key); });
   const teamMap=accumTeam(rows,r=>RAW.teams[r[3]]);
   let teams=[...teamMap.entries()].map(([name,c])=>({name,c,value:mk.val(c)})).filter(t=>t.c.__m>=MIN_GAMES);
   if(mk.denom){ teams=teams.filter(t=>t.c[mk.denom]>=mk.min); }
@@ -319,7 +320,9 @@ function setStaticChrome(){
 }
 function buildKpis(){
   const kwrap=document.getElementById('kpis'); kwrap.replaceChildren();
-  CFG.kpis.forEach((k,i)=>{ const d=document.createElement('div'); d.className='kpi'; d.innerHTML=`<div class="lbl"></div><div class="val" id="kpi${i}">–</div><div class="note" id="kpi${i}n"></div>`; d.querySelector('.lbl').textContent=k.label; kwrap.appendChild(d); });
+  CFG.kpis.forEach((k,i)=>{ const d=document.createElement('div'); d.className='kpi'; d.innerHTML=`<div class="lbl"></div><div class="val" id="kpi${i}">–</div><div class="note" id="kpi${i}n"></div>`; d.querySelector('.lbl').textContent=k.label;
+    if(k.key){ d.style.cursor='pointer'; d.addEventListener('click',()=>{ document.getElementById('f-metric').value=k.key; render(); }); }
+    kwrap.appendChild(d); });
 }
 function populateMetricSelect(){
   const ms=document.getElementById('f-metric'); const prev=ms.value; ms.replaceChildren();
