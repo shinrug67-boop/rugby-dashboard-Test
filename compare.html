@@ -159,7 +159,7 @@ const UI = {
     kick_lost:'相手確保', kick_touch:'タッチ', kick_error:'エラー',
     ho_throw:'ラインアウトスロー成功率', ho_throw_n:'スロー数',
     lo_catch:'ラインアウト成功率(捕球)', lo_catch_n:'ATキャッチ数', lo_steal:'DFラインアウトスティール数',
-    note_total_avg:(tot,avg)=>`合計 ${tot} ・ 1試合平均 ${avg}`,
+    note_total:(tot)=>`合計 ${tot}`,
     note_pct:(n,d)=>`${n} / ${d}`,
     foot:'定義: キャリーゲインm=Distance+ / ポストコンタクトm=Metres3合計 / DF Beaten=Attacking Qualities×Defender Beaten / オフロード=Pass×Offload(結果Own Player/To Ground/To Opposition)、成功=Own Player / タックル成功率=(成功各種+Offload Allowed/Pen Conceded)÷タックル(Missed/Ineffective除外) / ジャッカル=Collection×Jackal、成功=Success / OOA=Ruck OOAのqualifier4(Attacking/Defensive OOA) / キックメーター=Kick in Play区間のDistance+合計 / ラインアウトスロー成功率=投げ手個人のWon÷総投球(HOのみ表示) / ラインアウト成功率(捕球)=捕球者個人の自チーム投球Won÷総捕球、DFスティール=Lineout TakeのSteal系(LOのみ表示)。ポジションはその選手の生涯最頻出ポジションで判定。Prop(スクラム)の個人スタッツは元データ上スクラムハーフ名義で記録されるため未対応。データ: Opta(Stats Perform, Level 2 Restricted)。' },
   en:{ nav_home:'Home', nav_kick:'Kicking', nav_attack:'Attack', nav_defense:'Defense', nav_setpiece:'Set Piece', nav_game:'Game Summary', nav_compare:'Player Compare',
@@ -183,7 +183,7 @@ const UI = {
     kick_lost:'Opp. secured', kick_touch:'Touch', kick_error:'Error',
     ho_throw:'Lineout throw success%', ho_throw_n:'Throws',
     lo_catch:'Lineout success% (catch)', lo_catch_n:'AT catches', lo_steal:'DF lineout steals',
-    note_total_avg:(tot,avg)=>`Total ${tot} · per match ${avg}`,
+    note_total:(tot)=>`Total ${tot}`,
     note_pct:(n,d)=>`${n} / ${d}`,
     foot:'Definitions: Carry metres=Distance+ / Post-contact m=sum of Metres3 / DF Beaten=Attacking Qualities×Defender Beaten / Offload=Pass×Offload (result Own Player/To Ground/To Opposition), success=Own Player / Tackle success=(success variants+Offload Allowed/Pen Conceded)÷tackles (Missed/Ineffective excluded) / Jackal=Collection×Jackal, success=Success / OOA=Ruck OOA qualifier4 (Attacking/Defensive OOA) / Kick metres=Distance+ summed over Kick in Play qualifiers / Lineout throw success=thrower\'s own Won÷own throws (Hookers only) / Lineout success (catch)=catcher\'s own-throw Won÷own catches, DF steal=Lineout Take Steal variants (Locks only). Position = the player\'s career-long most frequent position. Individual Prop (scrum) stats aren\'t available since Scrum events are recorded under the scrum-half\'s name in the source data. Data: Opta (Stats Perform, Level 2 Restricted).' }
 };
@@ -238,7 +238,6 @@ function cmpRow(container, label, valA, valB, digits, noteA, noteB){
   const mid = document.createElement('div'); mid.className='mid';
   const lbl = document.createElement('div'); lbl.className='lbl'; lbl.textContent = label; mid.appendChild(lbl);
   const bar = document.createElement('div'); bar.className='bar';
-  const max = Math.max(valA, valB, 1e-9);
   const ba = document.createElement('div'); ba.className='a'; ba.style.width = (valA/(valA+valB||1)*100)+'%';
   const bb = document.createElement('div'); bb.className='b'; bb.style.width = (valB/(valA+valB||1)*100)+'%';
   bar.appendChild(ba); bar.appendChild(bb); mid.appendChild(bar);
@@ -258,9 +257,9 @@ function section(container, title){
 function totalAvgRow(card, label, ca, cb, key, digits){
   const totA = ca[key], totB = cb[key];
   const avgA = ca.__m? totA/ca.__m : 0, avgB = cb.__m? totB/cb.__m : 0;
-  cmpRow(card, label, totA, totB, digits,
-    U().note_total_avg(fmtVal(totA,digits), f1(avgA)),
-    U().note_total_avg(fmtVal(totB,digits), f1(avgB)));
+  cmpRow(card, label, avgA, avgB, 1,
+    U().note_total(fmtVal(totA,digits)),
+    U().note_total(fmtVal(totB,digits)));
 }
 function pctRow(card, label, ca, cb, numKey, denKey){
   const pa = pct(ca[numKey], ca[denKey]), pb = pct(cb[numKey], cb[denKey]);
