@@ -234,14 +234,16 @@ function fmtVal(x, digits){ return (digits===0? Math.round(x).toLocaleString() :
 
 function cmpRow(container, label, valA, valB, digits, noteA, noteB){
   const row = document.createElement('div'); row.className='row';
-  const a = document.createElement('div'); a.className='val a'; a.innerHTML = `${fmtVal(valA,digits)}${noteA?`<div class="note">${noteA}</div>`:''}`;
+  const dispA = valA==null ? '–' : fmtVal(valA,digits), dispB = valB==null ? '–' : fmtVal(valB,digits);
+  const a = document.createElement('div'); a.className='val a'; a.innerHTML = `${dispA}${noteA?`<div class="note">${noteA}</div>`:''}`;
   const mid = document.createElement('div'); mid.className='mid';
   const lbl = document.createElement('div'); lbl.className='lbl'; lbl.textContent = label; mid.appendChild(lbl);
   const bar = document.createElement('div'); bar.className='bar';
-  const ba = document.createElement('div'); ba.className='a'; ba.style.width = (valA/(valA+valB||1)*100)+'%';
-  const bb = document.createElement('div'); bb.className='b'; bb.style.width = (valB/(valA+valB||1)*100)+'%';
+  const nA = valA||0, nB = valB||0;
+  const ba = document.createElement('div'); ba.className='a'; ba.style.width = (nA/(nA+nB||1)*100)+'%';
+  const bb = document.createElement('div'); bb.className='b'; bb.style.width = (nB/(nA+nB||1)*100)+'%';
   bar.appendChild(ba); bar.appendChild(bb); mid.appendChild(bar);
-  const b = document.createElement('div'); b.className='val b'; b.innerHTML = `${fmtVal(valB,digits)}${noteB?`<div class="note">${noteB}</div>`:''}`;
+  const b = document.createElement('div'); b.className='val b'; b.innerHTML = `${dispB}${noteB?`<div class="note">${noteB}</div>`:''}`;
   row.appendChild(a); row.appendChild(mid); row.appendChild(b);
   container.appendChild(row);
 }
@@ -298,31 +300,29 @@ function playtimeTable(playerIdx){
   return wrap;
 }
 
-function fwBlock(container, side, pos, c){
-  if(HO_POS.has(pos)){
-    const card = section(container, U().sec_fw + ' — ' + pos);
-    const p = pct(c.lo_throw_won, c.lo_throw_total);
-    const row = document.createElement('div'); row.className='row';
-    const val = side==='a' ? `<div class="val a">${p.toFixed(1)}%<div class="note">${U().ho_throw_n}: ${c.lo_throw_total}</div></div>` : '';
-    row.innerHTML = side==='a'
-      ? `<div class="val a">${p.toFixed(1)}%<div class="note">${U().ho_throw_n}: ${c.lo_throw_total}</div></div><div class="mid"><div class="lbl">${U().ho_throw}</div></div><div></div>`
-      : `<div></div><div class="mid"><div class="lbl">${U().ho_throw}</div></div><div class="val b">${p.toFixed(1)}%<div class="note">${U().ho_throw_n}: ${c.lo_throw_total}</div></div>`;
-    card.appendChild(row);
+function fwBlocks(container, posA, posB, ca, cb){
+  const hoA = HO_POS.has(posA), hoB = HO_POS.has(posB);
+  if(hoA || hoB){
+    const card = section(container, U().sec_fw + ' — Hooker');
+    const pA = hoA ? pct(ca.lo_throw_won, ca.lo_throw_total) : null;
+    const pB = hoB ? pct(cb.lo_throw_won, cb.lo_throw_total) : null;
+    cmpRow(card, U().ho_throw, pA, pB, 1,
+      hoA ? `${U().ho_throw_n}: ${ca.lo_throw_total}` : '',
+      hoB ? `${U().ho_throw_n}: ${cb.lo_throw_total}` : '');
   }
-  if(LO_POS.has(pos)){
-    const card = section(container, U().sec_fw + ' — ' + pos);
-    const p = pct(c.lo_catch_won, c.lo_catch_total);
-    const row1 = document.createElement('div'); row1.className='row';
-    row1.innerHTML = side==='a'
-      ? `<div class="val a">${p.toFixed(1)}%<div class="note">${U().lo_catch_n}: ${c.lo_catch_total}</div></div><div class="mid"><div class="lbl">${U().lo_catch}</div></div><div></div>`
-      : `<div></div><div class="mid"><div class="lbl">${U().lo_catch}</div></div><div class="val b">${p.toFixed(1)}%<div class="note">${U().lo_catch_n}: ${c.lo_catch_total}</div></div>`;
-    card.appendChild(row1);
-    const row2 = document.createElement('div'); row2.className='row';
-    const avgSteal = c.__m? c.lo_steal/c.__m : 0;
-    row2.innerHTML = side==='a'
-      ? `<div class="val a">${c.lo_steal}<div class="note">${f1(avgSteal)}/match</div></div><div class="mid"><div class="lbl">${U().lo_steal}</div></div><div></div>`
-      : `<div></div><div class="mid"><div class="lbl">${U().lo_steal}</div></div><div class="val b">${c.lo_steal}<div class="note">${f1(avgSteal)}/match</div></div>`;
-    card.appendChild(row2);
+  const loA = LO_POS.has(posA), loB = LO_POS.has(posB);
+  if(loA || loB){
+    const title = loA ? posA : posB;
+    const card = section(container, U().sec_fw + ' — ' + title);
+    const catchA = loA ? pct(ca.lo_catch_won, ca.lo_catch_total) : null;
+    const catchB = loB ? pct(cb.lo_catch_won, cb.lo_catch_total) : null;
+    cmpRow(card, U().lo_catch, catchA, catchB, 1,
+      loA ? `${U().lo_catch_n}: ${ca.lo_catch_total}` : '',
+      loB ? `${U().lo_catch_n}: ${cb.lo_catch_total}` : '');
+    const stealA = loA ? ca.lo_steal : null, stealB = loB ? cb.lo_steal : null;
+    cmpRow(card, U().lo_steal, stealA, stealB, 0,
+      loA ? f1(ca.__m?ca.lo_steal/ca.__m:0)+'/match' : '',
+      loB ? f1(cb.__m?cb.lo_steal/cb.__m:0)+'/match' : '');
   }
 }
 
@@ -379,8 +379,7 @@ function render(){
   const apmA = ca.playtime? ca.actions/ca.playtime : 0, apmB = cb.playtime? cb.actions/cb.playtime : 0;
   cmpRow(other, U().m_apm, apmA, apmB, 2);
 
-  fwBlock(content, 'a', posA, ca);
-  fwBlock(content, 'b', posB, cb);
+  fwBlocks(content, posA, posB, ca, cb);
 }
 
 function setStaticChrome(){
