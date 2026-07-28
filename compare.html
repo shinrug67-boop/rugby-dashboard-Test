@@ -149,7 +149,7 @@ const UI = {
     sec_time:'プレータイム', sec_attack:'アタック', sec_defense:'ディフェンス', sec_breakdown:'ブレイクダウン関与(Ruck OOA)',
     sec_kick:'キック', sec_other:'その他', sec_fw:'フォワード専門スタッツ',
     playtime_title:'プレータイム(シーズン別、フィルタ非依存)', playtime_desc:'選手選択後、その選手の全出場シーズンを表示',
-    col_season:'シーズン', col_team:'チーム', col_min:'プレー時間(分)',
+    col_season:'シーズン', col_team:'チーム', col_min:'プレー時間(分)', col_gp:'出場試合数', col_avgmin:'平均プレー時間(分)',
     m_carries:'キャリー', m_carrym:'キャリーゲインm', m_post:'ポストコンタクトm', m_beaten:'DF Beaten',
     m_offload:'オフロード', m_offload_pct:'オフロード成功率', m_linebreak:'ラインブレイク', m_passes:'パス',
     m_tackles:'タックル', m_tackle_pct:'タックル成功率', m_jackal:'ジャッカル', m_jackal_pct:'ジャッカル成功率',
@@ -173,7 +173,7 @@ const UI = {
     sec_time:'Playing Time', sec_attack:'Attack', sec_defense:'Defense', sec_breakdown:'Breakdown Involvement (Ruck OOA)',
     sec_kick:'Kicking', sec_other:'Other', sec_fw:'Forward-Specific Stats',
     playtime_title:'Playing time by season (ignores filters above)', playtime_desc:'Shows every season the selected player appeared in',
-    col_season:'Season', col_team:'Team', col_min:'Minutes',
+    col_season:'Season', col_team:'Team', col_min:'Minutes', col_gp:'Games', col_avgmin:'Avg min/match',
     m_carries:'Carries', m_carrym:'Carry metres', m_post:'Post-contact m', m_beaten:'DF Beaten',
     m_offload:'Offloads', m_offload_pct:'Offload success%', m_linebreak:'Line breaks', m_passes:'Passes',
     m_tackles:'Tackles', m_tackle_pct:'Tackle success%', m_jackal:'Jackal', m_jackal_pct:'Jackal success%',
@@ -286,11 +286,12 @@ function playtimeTable(playerIdx){
   const rows = rowsFor(playerIdx).slice().sort((x,y)=> x[1]-y[1]);
   const wrap = document.createElement('div'); wrap.className='tbl-scroll';
   const table = document.createElement('table');
-  table.innerHTML = `<thead><tr><th>${U().col_season}</th><th>${U().col_team}</th><th>${U().col_min}</th></tr></thead>`;
+  table.innerHTML = `<thead><tr><th>${U().col_season}</th><th>${U().col_team}</th><th>${U().col_min}</th><th>${U().col_gp}</th><th>${U().col_avgmin}</th></tr></thead>`;
   const tbody = document.createElement('tbody');
   rows.forEach(r=>{
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${r[1]}</td><td>${RAW.teams[r[2]]}</td><td>${Math.round(r[pIdx.playtime])}</td>`;
+    const gp = r[4], mins = r[pIdx.playtime];
+    tr.innerHTML = `<td>${r[1]}</td><td>${RAW.teams[r[2]]}</td><td>${Math.round(mins)}</td><td>${gp}</td><td>${gp?(mins/gp).toFixed(1):'–'}</td>`;
     tbody.appendChild(tr);
   });
   table.appendChild(tbody); wrap.appendChild(table);
