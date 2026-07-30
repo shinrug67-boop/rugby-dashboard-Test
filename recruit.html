@@ -93,7 +93,8 @@ footer { margin-top:16px; font-size:12px; color:var(--ink-muted); }
     <a href="kick.html" data-nav="kick" id="nav-kick">キック</a>
     <a href="attack.html" data-nav="attack" id="nav-attack">アタック</a>
     <a href="defense.html" data-nav="defense" id="nav-defense">ディフェンス</a>
-    <a href="setpiece.html" data-nav="setpiece" id="nav-setpiece">FWセットプレー</a>
+    <a href="lineout.html" data-nav="lineout" id="nav-lineout">ラインアウト</a>
+    <a href="scrum.html" data-nav="scrum" id="nav-scrum">スクラム</a>
     <a href="game.html" data-nav="game" id="nav-game">試合サマリー</a>
     <a href="compare.html" data-nav="compare" id="nav-compare">選手比較</a>
     <a href="recruit.html" data-nav="recruit" id="nav-recruit">大学生比較</a>
@@ -140,7 +141,7 @@ const HO_POS = new Set(['Hooker']);
 const LO_POS = new Set(['Lock (4)','Lock (5)','Openside Flanker','Blindside Flanker','Number 8']);
 
 const UI = {
-  ja:{ nav_home:'ホーム', nav_kick:'キック', nav_attack:'アタック', nav_defense:'ディフェンス', nav_setpiece:'FWセットプレー', nav_game:'試合サマリー', nav_compare:'選手比較', nav_recruit:'大学生比較',
+  ja:{ nav_home:'ホーム', nav_kick:'キック', nav_attack:'アタック', nav_defense:'ディフェンス', nav_lineout:'ラインアウト', nav_scrum:'スクラム', nav_game:'試合サマリー', nav_compare:'選手比較', nav_recruit:'大学生比較',
     logout_btn:'ログアウト', lang_btn:'EN',
     doctitle:'大学生選手比較 — Rugby Analytics',
     page_title:'大学生選手比較', page_sub:'リクルート用: 大学生選手2名のスタッツを合計・1試合平均で比較(データ: Opta Stats Perform)',
@@ -165,7 +166,7 @@ const UI = {
     note_pct:(n,d)=>`${n} / ${d}`,
     off_scrum_pct:'アタックスクラム成功率', def_scrum_pressure:'ディフェンススクラムPressure%', def_scrum_success:'ディフェンススクラム成功率',
     foot:'定義: キャリーゲインm=Distance+ / ポストコンタクトm=Metres3合計 / DF Beaten=Attacking Qualities×Defender Beaten / オフロード=Pass×Offload(結果Own Player/To Ground/To Opposition)、成功=Own Player / タックル成功率=(成功各種+Offload Allowed/Pen Conceded)÷タックル(Missed/Ineffective除外) / ジャッカル=Collection×Jackal、成功=Success / OOA=Ruck OOAのqualifier4(Attacking/Defensive OOA) / キックメーター=Kick in Play区間のDistance+合計 / ラインアウトスロー成功率=投げ手個人のWon÷総投球(HOのみ表示) / ラインアウト成功率(捕球)=捕球者個人の自チーム投球Won÷総捕球、DFスティール=Lineout TakeのSteal系(LOのみ表示) / アタックスクラム成功率=Offensive Scrum(action=28)個人参加行のうちWon Outright/Won Free Kick/Won Penalty/Won Penalty Try/Won Try÷総参加数 / ディフェンススクラムPressure%=Defensive Scrum(action=29)個人参加行のうちLost Outright/Lost Free Kick/Lost Pen Con/Lost Reversed÷総参加数 / ディフェンススクラム成功率=Pressure%の分子にWon Outrightを加えたもの(反則を与えなければ成功)。ポジションはその選手の生涯最頻出ポジションで判定。データ: Opta(Stats Perform, Level 2 Restricted)。' },
-  en:{ nav_home:'Home', nav_kick:'Kicking', nav_attack:'Attack', nav_defense:'Defense', nav_setpiece:'Set Piece', nav_game:'Game Summary', nav_compare:'Player Compare', nav_recruit:'University Compare',
+  en:{ nav_home:'Home', nav_kick:'Kicking', nav_attack:'Attack', nav_defense:'Defense', nav_lineout:'Lineout', nav_scrum:'Scrum', nav_game:'Game Summary', nav_compare:'Player Compare', nav_recruit:'University Compare',
     logout_btn:'Sign out', lang_btn:'日本語',
     doctitle:'University Player Comparison — Rugby Analytics',
     page_title:'University Player Comparison', page_sub:'For recruiting: compare two university players\' stats as totals and per-match averages (Data: Opta Stats Perform)',
@@ -423,7 +424,8 @@ function setStaticChrome(){
   document.getElementById('nav-kick').textContent = U().nav_kick;
   document.getElementById('nav-attack').textContent = U().nav_attack;
   document.getElementById('nav-defense').textContent = U().nav_defense;
-  document.getElementById('nav-setpiece').textContent = U().nav_setpiece;
+  document.getElementById('nav-lineout').textContent = U().nav_lineout;
+  document.getElementById('nav-scrum').textContent = U().nav_scrum;
   document.getElementById('nav-game').textContent = U().nav_game;
   document.getElementById('nav-compare').textContent = U().nav_compare;
   document.getElementById('nav-recruit').textContent = U().nav_recruit;

@@ -67,7 +67,8 @@ footer { margin-top:28px; font-size:12px; color:var(--ink-muted); border-top:1px
     <a href="kick.html" id="nav-kick">キック</a>
     <a href="attack.html" id="nav-attack">アタック</a>
     <a href="defense.html" id="nav-defense">ディフェンス</a>
-    <a href="setpiece.html" id="nav-setpiece">FWセットプレー</a>
+    <a href="lineout.html" id="nav-lineout">ラインアウト</a>
+    <a href="scrum.html" id="nav-scrum">スクラム</a>
     <a href="game.html" id="nav-game">試合サマリー</a>
     <a href="compare.html" id="nav-compare">選手比較</a>
     <a href="recruit.html" id="nav-recruit" style="display:none">大学生比較</a>
@@ -106,10 +107,15 @@ footer { margin-top:28px; font-size:12px; color:var(--ink-muted); border-top:1px
       <p id="t-defense-p">タックルとブレイクダウンの守備指標。タックル成功率はMissed/Ineffectiveを除く定義。チーム別・選手別。</p>
       <div class="chips" id="t-defense-chips"></div>
     </a>
-    <a class="tile" href="setpiece.html">
-      <div class="top"><span class="ico">🏉</span><h2 id="t-setpiece-h2">FWセットプレー</h2><span class="badge" id="t-setpiece-badge">公開中</span><span class="arrow">→</span></div>
-      <p id="t-setpiece-p">スクラム・ラインアウト・モールのセットピース指標。パック(チーム)単位で比較します。</p>
-      <div class="chips" id="t-setpiece-chips"></div>
+    <a class="tile" href="lineout.html">
+      <div class="top"><span class="ico">🏉</span><h2 id="t-lineout-h2">ラインアウト</h2><span class="badge" id="t-lineout-badge">公開中</span><span class="arrow">→</span></div>
+      <p id="t-lineout-p">ラインアウト・モールのセットピース指標。パック(チーム)単位で比較します。</p>
+      <div class="chips" id="t-lineout-chips"></div>
+    </a>
+    <a class="tile" href="scrum.html">
+      <div class="top"><span class="ico">💪</span><h2 id="t-scrum-h2">スクラム</h2><span class="badge" id="t-scrum-badge">公開中</span><span class="arrow">→</span></div>
+      <p id="t-scrum-p">スクラムの成功率とペナルティ獲得。パック(チーム)単位で比較します。</p>
+      <div class="chips" id="t-scrum-chips"></div>
     </a>
     <a class="tile" href="game.html">
       <div class="top"><span class="ico">📋</span><h2 id="t-game-h2">試合サマリー</h2><span class="badge" id="t-game-badge">公開中</span><span class="arrow">→</span></div>
@@ -138,7 +144,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const I18N = {
   ja:{
     doctitle:'Rugby Analytics — 分析ハブ',
-    nav_home:'ホーム', nav_kick:'キック', nav_attack:'アタック', nav_defense:'ディフェンス', nav_setpiece:'FWセットプレー', nav_game:'試合サマリー', nav_compare:'選手比較', nav_recruit:'大学生比較',
+    nav_home:'ホーム', nav_kick:'キック', nav_attack:'アタック', nav_defense:'ディフェンス', nav_lineout:'ラインアウト', nav_scrum:'スクラム', nav_game:'試合サマリー', nav_compare:'選手比較', nav_recruit:'大学生比較',
     logout_btn:'ログアウト',
     hero_p:'Opta (Stats Perform) BIイベントデータをもとにした分析ダッシュボード集。7コンペティション・1,493試合(2024〜2026シーズン)を横断し、局面ごとの傾向を「1試合平均」で比較できます。集計定義は Power BI のメジャーに整合しています。',
     stat_comp:'コンペティション', stat_match:'試合', stat_season:'シーズン (2024–26)', stat_team:'チーム',
@@ -150,8 +156,10 @@ const I18N = {
         chips:['キャリー/試合','獲得m(Distance+)','平均ゲイン','ゲインライン突破率','ドミナント率','ディフェンダー突破','ラインブレイク','オフロード成功率','22m侵入→得点率','トライ']},
       defense:{h2:'ディフェンス', p:'タックルとブレイクダウンの守備指標。タックル成功率はMissed/Ineffectiveを除く定義。チーム別・選手別。',
         chips:['タックル/試合','タックル成功率','ドミナント率','ミスタックル','ジャッカル(成功率)','タックルTO獲得','被ターンオーバー']},
-      setpiece:{h2:'FWセットプレー', p:'スクラム・ラインアウト・モールのセットピース指標。パック(チーム)単位で比較します。',
-        chips:['スクラム成功率','ラインアウト成功率','ラインアウトスティール','モール成功率','モールトライ','スクラムPK獲得']},
+      lineout:{h2:'ラインアウト', p:'ラインアウト・モールのセットピース指標。パック(チーム)単位で比較します。',
+        chips:['ラインアウト成功率','ラインアウトスティール','モール成功率','モールトライ']},
+      scrum:{h2:'スクラム', p:'スクラムの成功率とペナルティ獲得。パック(チーム)単位で比較します。',
+        chips:['スクラム成功率','スクラムPK獲得']},
       game:{h2:'試合サマリー', p:'試合単位のチーム比較・選手出場データ。1試合を選び、前半/後半別のスタッツと選手ロースターを見られます。',
         chips:['前半/後半別スタッツ','スコア','GainLine%','タックル成否(選手別)','出場時間']},
       compare:{h2:'選手比較', p:'2選手のスタッツを合計・1試合平均で比較。フォワードはラインアウトの個人スタッツも見られます。',
@@ -162,7 +170,7 @@ const I18N = {
   },
   en:{
     doctitle:'Rugby Analytics — Hub',
-    nav_home:'Home', nav_kick:'Kicking', nav_attack:'Attack', nav_defense:'Defense', nav_setpiece:'Set Piece', nav_game:'Game Summary', nav_compare:'Player Compare', nav_recruit:'University Compare',
+    nav_home:'Home', nav_kick:'Kicking', nav_attack:'Attack', nav_defense:'Defense', nav_lineout:'Lineout', nav_scrum:'Scrum', nav_game:'Game Summary', nav_compare:'Player Compare', nav_recruit:'University Compare',
     logout_btn:'Sign out',
     hero_p:'A set of analytics dashboards built on Opta (Stats Perform) BI event data. Spans 7 competitions and 1,493 matches (2024–2026 seasons), comparing trends by phase of play on a per-match-average basis. Definitions are aligned with the Power BI measures.',
     stat_comp:'Competitions', stat_match:'Matches', stat_season:'Seasons (2024–26)', stat_team:'Teams',
@@ -174,8 +182,10 @@ const I18N = {
         chips:['Carries/match','Metres gained (Distance+)','Avg gain','Gainline break rate','Dominant rate','Defenders beaten','Line breaks','Offload success rate','22m entry → points rate','Tries']},
       defense:{h2:'Defense', p:'Tackle and breakdown defensive metrics. Tackle success rate excludes Missed/Ineffective. By team and player.',
         chips:['Tackles/match','Tackle success rate','Dominant rate','Missed tackles','Jackal (success rate)','Tackle turnovers won','Turnovers conceded']},
-      setpiece:{h2:'Set Piece', p:'Scrum, lineout and maul set-piece metrics, compared at the pack (team) level.',
-        chips:['Scrum success rate','Lineout success rate','Lineout steals','Maul success rate','Maul tries','Scrum penalties won']},
+      lineout:{h2:'Lineout', p:'Lineout and maul set-piece metrics, compared at the pack (team) level.',
+        chips:['Lineout success rate','Lineout steals','Maul success rate','Maul tries']},
+      scrum:{h2:'Scrum', p:'Scrum success rate and penalties won, compared at the pack (team) level.',
+        chips:['Scrum success rate','Scrum penalties won']},
       game:{h2:'Game Summary', p:'Match-level team comparison and player appearances. Pick a fixture to see 1st/2nd-half stats and the player roster.',
         chips:['1st/2nd half stats','Score','GainLine%','Tackle outcomes (by player)','Time on pitch']},
       compare:{h2:'Player Compare', p:'Compare two players\' stats as totals and per-match averages. Forwards also get individual lineout stats.',
@@ -194,7 +204,8 @@ function applyLang(){
   document.getElementById('nav-kick').textContent = d.nav_kick;
   document.getElementById('nav-attack').textContent = d.nav_attack;
   document.getElementById('nav-defense').textContent = d.nav_defense;
-  document.getElementById('nav-setpiece').textContent = d.nav_setpiece;
+  document.getElementById('nav-lineout').textContent = d.nav_lineout;
+  document.getElementById('nav-scrum').textContent = d.nav_scrum;
   document.getElementById('nav-game').textContent = d.nav_game;
   document.getElementById('nav-compare').textContent = d.nav_compare;
   const navRecruit=document.getElementById('nav-recruit'); if(navRecruit) navRecruit.textContent = d.nav_recruit;
@@ -205,7 +216,7 @@ function applyLang(){
   document.getElementById('stat-season-l').textContent = d.stat_season;
   document.getElementById('stat-team-l').textContent = d.stat_team;
   document.getElementById('sec-h').textContent = d.sec_h;
-  ['kick','attack','defense','setpiece','game','compare'].forEach(key=>{
+  ['kick','attack','defense','lineout','scrum','game','compare'].forEach(key=>{
     const t = d.tiles[key];
     document.getElementById('t-'+key+'-h2').textContent = t.h2;
     document.getElementById('t-'+key+'-badge').textContent = d.badge;
