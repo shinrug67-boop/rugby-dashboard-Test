@@ -45,6 +45,20 @@ const SUPABASE_ANON_KEY = 'sb_publishable_WUHxP4DDM9FRN4JfduqDNA_-S3lCM2p';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const COOKIE_MAX_AGE = 60 * 60 * 12; // 12 hours
 
+// Emails allowed to see recruit.html (university recruiting comparison --
+// management staff only, not the general player/coach roster). Add/remove
+// addresses here and redeploy to change who can reach that page.
+const MANAGEMENT_EMAILS = [
+  'shinrug67@gmail.com',
+];
+function setAuthCookies(email){
+  document.cookie = `sb-auth=1; Path=/; Max-Age=${COOKIE_MAX_AGE}; SameSite=Lax; Secure`;
+  const isManagement = MANAGEMENT_EMAILS.includes((email||'').trim().toLowerCase());
+  document.cookie = isManagement
+    ? `mgmt-auth=1; Path=/; Max-Age=${COOKIE_MAX_AGE}; SameSite=Lax; Secure`
+    : 'mgmt-auth=; Path=/; Max-Age=0; SameSite=Lax; Secure';
+}
+
 const UI = {
   ja:{ title:'ログイン', btn:'ログイン', lang_btn:'EN' },
   en:{ title:'Sign in', btn:'Sign in', lang_btn:'日本語' }
@@ -75,7 +89,7 @@ async function doLogin(){
   const errEl = document.getElementById('login-error'); errEl.textContent = '';
   const { error } = await sb.auth.signInWithPassword({ email, password });
   if (error) { errEl.textContent = error.message; return; }
-  document.cookie = `sb-auth=1; Path=/; Max-Age=${COOKIE_MAX_AGE}; SameSite=Lax; Secure`;
+  setAuthCookies(email);
   location.href = nextPath();
 }
 document.getElementById('login-submit').addEventListener('click', doLogin);
@@ -85,7 +99,7 @@ document.getElementById('login-password').addEventListener('keydown', e=>{ if (e
 (async ()=>{
   const { data:{ session } } = await sb.auth.getSession();
   if (session) {
-    document.cookie = `sb-auth=1; Path=/; Max-Age=${COOKIE_MAX_AGE}; SameSite=Lax; Secure`;
+    setAuthCookies(session.user.email);
     location.href = nextPath();
   }
 })();

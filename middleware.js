@@ -9,18 +9,30 @@
 // data lives in Supabase RLS (see game.html); this middleware exists so
 // the other pages' embedded season-aggregate data isn't served to anyone
 // who never logged in at all.
+//
+// recruit.html (university recruiting comparison) additionally requires
+// the `mgmt-auth` cookie, only set by login.html for emails on the
+// management allowlist -- this page's data is recruiting-sensitive and
+// meant for management staff only, not the general player/coach roster.
 
 export default function middleware(request) {
   // Parse the Cookie header manually (standard Fetch API only -- no `next`
   // package dependency, so this stays a plain static/"Other" Vercel project).
   const cookieHeader = request.headers.get('cookie') || '';
-  const isAuthed = cookieHeader.split(';').some(c => c.trim().startsWith('sb-auth='));
-  if (isAuthed) return;
-
+  const hasCookie = (name) => cookieHeader.split(';').some(c => c.trim().startsWith(name + '='));
+  const isAuthed = hasCookie('sb-auth');
   const url = new URL(request.url);
-  url.pathname = '/login.html';
-  url.searchParams.set('next', new URL(request.url).pathname);
-  return Response.redirect(url, 307);
+
+  if (!isAuthed) {
+    url.pathname = '/login.html';
+    url.searchParams.set('next', new URL(request.url).pathname);
+    return Response.redirect(url, 307);
+  }
+
+  if (url.pathname === '/recruit.html' && !hasCookie('mgmt-auth')) {
+    url.pathname = '/index.html';
+    return Response.redirect(url, 307);
+  }
 }
 
 export const config = {

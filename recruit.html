@@ -442,6 +442,7 @@ function setStaticChrome(){
 async function doLogout(){
   await sb.auth.signOut();
   document.cookie = 'sb-auth=; Path=/; Max-Age=0; SameSite=Lax; Secure';
+  document.cookie = 'mgmt-auth=; Path=/; Max-Age=0; SameSite=Lax; Secure';
   location.href = 'login.html';
 }
 

@@ -70,11 +70,13 @@ footer { margin-top:28px; font-size:12px; color:var(--ink-muted); border-top:1px
     <a href="setpiece.html" id="nav-setpiece">FWセットプレー</a>
     <a href="game.html" id="nav-game">試合サマリー</a>
     <a href="compare.html" id="nav-compare">選手比較</a>
+    <a href="recruit.html" id="nav-recruit" style="display:none">大学生比較</a>
   </div>
   <span class="spacer"></span>
   <button id="logout-btn" type="button"></button>
   <button id="lang-toggle" type="button">EN</button>
 </nav>
+<script>(function(){if(document.cookie.split('; ').some(function(c){return c.indexOf('mgmt-auth=')===0;})){var el=document.getElementById('nav-recruit');if(el)el.style.display='';}})();</script>
 <div class="wrap">
   <div class="hero">
     <h1>Rugby Analytics</h1>
@@ -136,7 +138,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const I18N = {
   ja:{
     doctitle:'Rugby Analytics — 分析ハブ',
-    nav_home:'ホーム', nav_kick:'キック', nav_attack:'アタック', nav_defense:'ディフェンス', nav_setpiece:'FWセットプレー', nav_game:'試合サマリー', nav_compare:'選手比較',
+    nav_home:'ホーム', nav_kick:'キック', nav_attack:'アタック', nav_defense:'ディフェンス', nav_setpiece:'FWセットプレー', nav_game:'試合サマリー', nav_compare:'選手比較', nav_recruit:'大学生比較',
     logout_btn:'ログアウト',
     hero_p:'Opta (Stats Perform) BIイベントデータをもとにした分析ダッシュボード集。7コンペティション・1,493試合(2024〜2026シーズン)を横断し、局面ごとの傾向を「1試合平均」で比較できます。集計定義は Power BI のメジャーに整合しています。',
     stat_comp:'コンペティション', stat_match:'試合', stat_season:'シーズン (2024–26)', stat_team:'チーム',
@@ -160,7 +162,7 @@ const I18N = {
   },
   en:{
     doctitle:'Rugby Analytics — Hub',
-    nav_home:'Home', nav_kick:'Kicking', nav_attack:'Attack', nav_defense:'Defense', nav_setpiece:'Set Piece', nav_game:'Game Summary', nav_compare:'Player Compare',
+    nav_home:'Home', nav_kick:'Kicking', nav_attack:'Attack', nav_defense:'Defense', nav_setpiece:'Set Piece', nav_game:'Game Summary', nav_compare:'Player Compare', nav_recruit:'University Compare',
     logout_btn:'Sign out',
     hero_p:'A set of analytics dashboards built on Opta (Stats Perform) BI event data. Spans 7 competitions and 1,493 matches (2024–2026 seasons), comparing trends by phase of play on a per-match-average basis. Definitions are aligned with the Power BI measures.',
     stat_comp:'Competitions', stat_match:'Matches', stat_season:'Seasons (2024–26)', stat_team:'Teams',
@@ -195,6 +197,7 @@ function applyLang(){
   document.getElementById('nav-setpiece').textContent = d.nav_setpiece;
   document.getElementById('nav-game').textContent = d.nav_game;
   document.getElementById('nav-compare').textContent = d.nav_compare;
+  const navRecruit=document.getElementById('nav-recruit'); if(navRecruit) navRecruit.textContent = d.nav_recruit;
   document.getElementById('lang-toggle').textContent = d.lang_btn;
   document.getElementById('hero-p').textContent = d.hero_p;
   document.getElementById('stat-comp-l').textContent = d.stat_comp;
@@ -228,6 +231,7 @@ document.getElementById('lang-toggle').addEventListener('click', ()=>{
 async function doLogout(){
   await sb.auth.signOut();
   document.cookie = 'sb-auth=; Path=/; Max-Age=0; SameSite=Lax; Secure';
+  document.cookie = 'mgmt-auth=; Path=/; Max-Age=0; SameSite=Lax; Secure';
   location.href = 'login.html';
 }
 document.getElementById('logout-btn').addEventListener('click', doLogout);
