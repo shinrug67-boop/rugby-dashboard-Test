@@ -551,7 +551,7 @@ const PLAYER_CAP = 200; // rows shown after sorting
 let pSortState = { col:'total', dir:'desc' };
 function renderPlayerTable(playersFull){
   const cols = [
-    { k:'name', l:CL('playerName') }, { k:'team', l:CL('team') }, { k:'comp', l:CL('comp') },
+    { k:'name', l:CL('playerName') }, { k:'comp', l:CL('comp') },
     { k:'total', l:CL('total') }, { k:'touch', l:CL('touch') }, { k:'infield', l:CL('infield') },
     { k:'retained', l:CL('retained') }, { k:'pressure', l:CL('pressure') }, { k:'notsecured', l:CL('notsecured') },
     { k:'lost', l:CL('lost') }, { k:'winRate', l:CL('winRate') }, { k:'lostRate', l:CL('lostRate') },
@@ -573,10 +573,10 @@ function renderPlayerTable(playersFull){
   cols.forEach(cdef => {
     const th = document.createElement('th');
     th.textContent = cdef.l + (pSortState.col===cdef.k ? (pSortState.dir==='asc'?' ▲':' ▼') : '');
-    if (cdef.k==='team' || cdef.k==='comp') th.style.textAlign = 'left';
+    if (cdef.k==='comp') th.style.textAlign = 'left';
     th.addEventListener('click', ()=>{
       if (pSortState.col===cdef.k) pSortState.dir = pSortState.dir==='asc'?'desc':'asc';
-      else pSortState = { col:cdef.k, dir: (cdef.k==='name'||cdef.k==='team'||cdef.k==='comp') ? 'asc' : 'desc' };
+      else pSortState = { col:cdef.k, dir: (cdef.k==='name'||cdef.k==='comp') ? 'asc' : 'desc' };
       render();
     });
     hr.appendChild(th);
@@ -588,9 +588,9 @@ function renderPlayerTable(playersFull){
     cols.forEach(cdef => {
       const td = document.createElement('td');
       const v = row[cdef.k];
-      if (cdef.k==='team' || cdef.k==='comp') td.style.textAlign = 'left';
+      if (cdef.k==='comp') td.style.textAlign = 'left';
       const disp = (cdef.k==='winRate'||cdef.k==='lostRate') ? v.toFixed(0)+'%' : (typeof v==='number'? v.toLocaleString() : v);
-      if (cdef.k==='name' || cdef.k==='team') {
+      if (cdef.k==='name') {
         const src = teamLogoSrc(row.team);
         td.innerHTML = (src?`<img src="${src}" alt="" style="height:15px;vertical-align:-3px;margin-right:5px">`:'') + disp;
       } else {
