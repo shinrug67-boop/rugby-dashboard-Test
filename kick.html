@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>コンテストキック ダッシュボード — 全コンペティション</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="team-logos.js"></script>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 :root {
@@ -352,6 +353,7 @@ function hStacked(containerId, groups, opts){
     const lab = el('text', { x:labelW-8, y:y+barH/2+4, 'text-anchor':'end', 'font-size':12, fill:cssColor('--ink-2') }, svg);
     const maxCh = Math.max(10, Math.floor((labelW-12)/7.2));
     lab.textContent = g.name.length > maxCh ? g.name.slice(0,maxCh-1)+'…' : g.name;
+    if(opts.teamLogos){ const src=teamLogoSrc(g.name); if(src) el('image',{href:src,x:4,y:y+(barH-15)/2,width:15,height:15,preserveAspectRatio:'xMidYMid meet'},svg); }
     let cursor = 0;
     OUTCOMES.forEach(o => {
       const v = g.c[o.key];
@@ -499,7 +501,7 @@ function render(){
   if (capped) teams = teams.sort((a,b)=>b.c.total-a.c.total).slice(0,TEAM_CAP);
   teams.sort((a,b)=> winRate(b.c)-winRate(a.c) || b.c.win-a.c.win);
   document.getElementById('team-desc').textContent = U().team_desc_f(capped, TEAM_CAP);
-  hStacked('c-team', teams, { rightLabel: g => g.c.infield ? Math.round(winRate(g.c)*100)+'%' : '–' });
+  hStacked('c-team', teams, { rightLabel: g => g.c.infield ? Math.round(winRate(g.c)*100)+'%' : '–', teamLogos:true });
 
   // players
   const pRows = pFiltered();
@@ -587,7 +589,13 @@ function renderPlayerTable(playersFull){
       const td = document.createElement('td');
       const v = row[cdef.k];
       if (cdef.k==='team' || cdef.k==='comp') td.style.textAlign = 'left';
-      td.textContent = (cdef.k==='winRate'||cdef.k==='lostRate') ? v.toFixed(0)+'%' : (typeof v==='number'? v.toLocaleString() : v);
+      const disp = (cdef.k==='winRate'||cdef.k==='lostRate') ? v.toFixed(0)+'%' : (typeof v==='number'? v.toLocaleString() : v);
+      if (cdef.k==='name' || cdef.k==='team') {
+        const src = teamLogoSrc(row.team);
+        td.innerHTML = (src?`<img src="${src}" alt="" style="height:15px;vertical-align:-3px;margin-right:5px">`:'') + disp;
+      } else {
+        td.textContent = disp;
+      }
       tr.appendChild(td);
     });
     tbody.appendChild(tr);
@@ -634,7 +642,13 @@ function renderTable(teams){
     cols.forEach(cdef => {
       const td = document.createElement('td');
       const v = row[cdef.k];
-      td.textContent = (cdef.k==='winRate'||cdef.k==='lostRate') ? v.toFixed(0)+'%' : (typeof v==='number'? v.toLocaleString() : v);
+      const disp = (cdef.k==='winRate'||cdef.k==='lostRate') ? v.toFixed(0)+'%' : (typeof v==='number'? v.toLocaleString() : v);
+      if (cdef.k==='name') {
+        const src = teamLogoSrc(row.name);
+        td.innerHTML = (src?`<img src="${src}" alt="" style="height:15px;vertical-align:-3px;margin-right:5px">`:'') + disp;
+      } else {
+        td.textContent = disp;
+      }
       tr.appendChild(td);
     });
     tbody.appendChild(tr);
