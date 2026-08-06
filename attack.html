@@ -196,7 +196,7 @@ const UI = {
     player_tbl_title:'選手別 詳細テーブル', lang_btn:'EN',
     logout_btn:'ログアウト',
     rank_desc:(capped,cap,minGames,hasDenom)=>(capped?`上位${cap}チーム。`:'')+`${minGames}試合以上。`+(hasDenom?'標本の少ないチームは除外。':'')+'ホバーで内訳',
-    player_desc:(min,eligible,capped,cap)=>`出場${min}以上の選手${eligible.toLocaleString()}人中`+(capped?`、現ソート上位${cap}人。`:`全員。`)+' 数量は1試合平均・ラウンドフィルタ適用外' },
+    player_desc:(min,eligible,capped,cap,minLabel)=>`${minLabel||'出場'}${min}以上の選手${eligible.toLocaleString()}人中`+(capped?`、現ソート上位${cap}人。`:`全員。`)+' 数量は1試合平均・ラウンドフィルタ適用外' },
   en:{ nav_home:'Home', nav_kick:'Kicking', nav_attack:'Attack', nav_defense:'Defense', nav_lineout:'Lineout', nav_scrum:'Scrum', nav_game:'Game Summary', nav_compare:'Player Compare', nav_recruit:'University Compare',
     f_comp:'Competition', f_season:'Season', f_round:'Round', f_team:'Team', f_metric:'Chart metric',
     all_comp:'All competitions', all_season:'All seasons', all_round:'All rounds', all_team:'All teams',
@@ -205,7 +205,7 @@ const UI = {
     player_tbl_title:'Player Detail Table', lang_btn:'日本語',
     logout_btn:'Sign out',
     rank_desc:(capped,cap,minGames,hasDenom)=>(capped?`Top ${cap} teams. `:'')+`${minGames}+ matches. `+(hasDenom?'Small-sample teams excluded. ':'')+'Hover for breakdown',
-    player_desc:(min,eligible,capped,cap)=>`${eligible.toLocaleString()} players with ${min}+ caps`+(capped?`, showing top ${cap} (current sort).`:', showing all.')+' Values are per-match average; round filter not applied' }
+    player_desc:(min,eligible,capped,cap,minLabel)=>`${eligible.toLocaleString()} players with ${min}+ ${minLabel||'caps'}`+(capped?`, showing top ${cap} (current sort).`:', showing all.')+' Values are per-match average; round filter not applied' }
 };
 let LANG = localStorage.getItem('rugbyAnalyticsLang') || ((navigator.language||'').toLowerCase().startsWith('ja') ? 'ja' : 'en');
 function U(){ return UI[LANG]; }
@@ -288,7 +288,7 @@ function renderPlayerTable(){
   let data=[...map.entries()].map(([pl,e])=>CFG.player.row(RAW.players[pl],RAW.teams[modal(e.team)],e.c,e.gp));
   const eligible=data.filter(d=>d.__min>=CFG.player.min); data=eligible; data.sort((a,b)=>cmp(a,b,sortP));
   const cap=CFG.player.cap||200; const capped=data.length>cap; data=data.slice(0,cap);
-  document.getElementById('ptbl-desc').textContent=U().player_desc(CFG.player.min,eligible.length,capped,cap);
+  document.getElementById('ptbl-desc').textContent=U().player_desc(CFG.player.min,eligible.length,capped,cap,CFG.player.minLabel);
   drawTable('ptbl',CFG.player.cols,data,sortP,(col)=>{ if(sortP.col===col)sortP.dir=sortP.dir==='asc'?'desc':'asc'; else sortP={col,dir:CFG.player.cols.find(c=>c[0]===col)[2]==='txt'?'asc':'desc'}; render(); },{nameLogo:true});
 }
 function cmp(a,b,st){ const x=a[st.col],y=b[st.col]; const c=x<y?-1:x>y?1:0; return st.dir==='asc'?c:-c; }
