@@ -143,8 +143,8 @@ const CFG_JA = {
     cols:[['name','選手','txt'],['gp','出場','int'],['catch','キャッチ/試合','f1'],['catchPct','キャッチ成功%','pct'],['steal','スティール/試合','f1']],
     row:(name,team,c,gp)=>({name,team,gp,__min:c.lo_catch_total,catch:gp?c.lo_catch_total/gp:0,catchPct:c.lo_catch_total?c.lo_catch_won/c.lo_catch_total*100:0,steal:gp?c.lo_steal/gp:0}) },
   player2:{ title:'選手別 詳細テーブル — ラインアウトスロー(HO)', minKey:'lo_throw_total', min:15, minLabel:'ラインアウトスロー回数', cap:200,
-    cols:[['name','選手','txt'],['gp','出場','int'],['throw','スロー/試合','f1'],['throwPct','スロー精度%','pct']],
-    row:(name,team,c,gp)=>({name,team,gp,__min:c.lo_throw_total,throw:gp?c.lo_throw_total/gp:0,throwPct:c.lo_throw_total?c.lo_throw_won/c.lo_throw_total*100:0}) }
+    cols:[['name','選手','txt'],['gp','出場','int'],['throwTotal','総スロー回数','int'],['throw','スロー/試合','f1'],['throwPct','スロー精度%','pct']],
+    row:(name,team,c,gp)=>({name,team,gp,__min:c.lo_throw_total,throwTotal:c.lo_throw_total,throw:gp?c.lo_throw_total/gp:0,throwPct:c.lo_throw_total?c.lo_throw_won/c.lo_throw_total*100:0}) }
 };
 const CFG_EN = {
   doctitle:'Lineout Analysis — Rugby Analytics', active:'lineout', title:'Lineout Analysis (per-match average)',
@@ -171,8 +171,8 @@ const CFG_EN = {
     cols:[['name','Player','txt'],['gp','Caps','int'],['catch','Catches/match','f1'],['catchPct','Catch success%','pct'],['steal','Steals/match','f1']],
     row:(name,team,c,gp)=>({name,team,gp,__min:c.lo_catch_total,catch:gp?c.lo_catch_total/gp:0,catchPct:c.lo_catch_total?c.lo_catch_won/c.lo_catch_total*100:0,steal:gp?c.lo_steal/gp:0}) },
   player2:{ title:'Player Detail Table — Lineout Throws (Hooker)', minKey:'lo_throw_total', min:15, minLabel:'lineout throws', cap:200,
-    cols:[['name','Player','txt'],['gp','Caps','int'],['throw','Throws/match','f1'],['throwPct','Throw accuracy%','pct']],
-    row:(name,team,c,gp)=>({name,team,gp,__min:c.lo_throw_total,throw:gp?c.lo_throw_total/gp:0,throwPct:c.lo_throw_total?c.lo_throw_won/c.lo_throw_total*100:0}) }
+    cols:[['name','Player','txt'],['gp','Caps','int'],['throwTotal','Total throws','int'],['throw','Throws/match','f1'],['throwPct','Throw accuracy%','pct']],
+    row:(name,team,c,gp)=>({name,team,gp,__min:c.lo_throw_total,throwTotal:c.lo_throw_total,throw:gp?c.lo_throw_total/gp:0,throwPct:c.lo_throw_total?c.lo_throw_won/c.lo_throw_total*100:0}) }
 };
 const UI = {
   ja:{ nav_home:'ホーム', nav_kick:'キック', nav_attack:'アタック', nav_defense:'ディフェンス', nav_lineout:'ラインアウト', nav_scrum:'スクラム', nav_game:'試合サマリー', nav_compare:'選手比較', nav_recruit:'大学生比較',
