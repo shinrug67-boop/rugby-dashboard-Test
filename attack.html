@@ -108,6 +108,7 @@ footer { margin-top:16px; font-size:12px; color:var(--ink-muted); }
     <div class="card"><h3 id="comp-title">コンペティション比較</h3><div class="desc" id="comp-desc">選択中の指標でリーグを比較(1試合平均)</div><div id="c-comp"></div></div>
     <div class="card full"><h3 id="team-tbl-title">チーム別 詳細テーブル</h3><div class="desc" id="team-tbl-desc">見出しクリックでソート。数量は1試合平均、率は合計比</div><div class="tbl-scroll" id="tbl"></div></div>
     <div class="card full" id="player-card"><h3 id="player-tbl-title">選手別 詳細テーブル</h3><div class="desc" id="ptbl-desc"></div><div class="tbl-scroll" id="ptbl"></div></div>
+    <div class="card full" id="player-card2"><h3 id="player-tbl-title2">選手別 詳細テーブル</h3><div class="desc" id="ptbl-desc2"></div><div class="tbl-scroll" id="ptbl2"></div></div>
   </section>
   <footer id="page-foot"></footer>
 </div>
@@ -214,6 +215,10 @@ const NS='http://www.w3.org/2000/svg';
 const TM=RAW.tmet, PM=RAW.pmet;
 const tIdx={}; TM.forEach((m,i)=>tIdx[m]=4+i);
 const pIdx={}; PM.forEach((m,i)=>pIdx[m]=5+i);   // P row: [c,season,tm,pl,gp,...pmet]
+// player2 (a page's optional 2nd player table, e.g. lineout throwers vs
+// catchers) reads the exact same RAW.P/pmet rows as the primary table --
+// just a different CFG.player2.minKey/row() view onto the same per-player
+// metric bag, same idea as how team rows hold every page's tmet fields.
 let METRICS=CFG.metrics;
 const MIN_GAMES=3;
 function metricByKey(k){ return METRICS.find(m=>m.key===k)||METRICS[0]; }
@@ -263,6 +268,7 @@ function hBar(containerId,items,opts){ const box=document.getElementById(contain
 }
 
 let sortT={col:CFG.teamCols[1][0],dir:'desc'}, sortP=CFG.player?{col:CFG.player.cols[2][0],dir:'desc'}:null;
+let sortP2=CFG.player2?{col:CFG.player2.cols[2][0],dir:'desc'}:null;
 const TEAM_CAP=25;
 function render(){
   const rows=tFilt(); const tot=emptyC(TM); let M=0; rows.forEach(r=>{TM.forEach(m=>tot[m]+=r[tIdx[m]]); M++;}); tot.__m=M;
@@ -282,14 +288,23 @@ function render(){
   const teamRows=[...teamMap.entries()].map(([name,c])=>CFG.teamRow(name,c));
   drawTable('tbl',CFG.teamCols,teamRows,sortT,(col)=>{ if(sortT.col===col)sortT.dir=sortT.dir==='asc'?'desc':'asc'; else sortT={col,dir:CFG.teamCols.find(c=>c[0]===col)[2]==='txt'?'asc':'desc'}; render(); },{nameLogo:true});
   if(CFG.player) renderPlayerTable();
+  if(CFG.player2) renderPlayerTable2();
 }
 function renderPlayerTable(){
   const map=accumPlayer(pFilt()); const modal=m=>[...m.entries()].sort((a,b)=>b[1]-a[1])[0][0];
-  let data=[...map.entries()].map(([pl,e])=>CFG.player.row(RAW.players[pl],RAW.teams[modal(e.team)],e.c,e.gp));
+  let data=[...map.entries()].map(([pl,e])=>CFG.player.row(RAW.players[pl],RAW.teams[modal(e.team)],e.c,e.gp,(RAW.playerPos||[])[pl]));
   const eligible=data.filter(d=>d.__min>=CFG.player.min); data=eligible; data.sort((a,b)=>cmp(a,b,sortP));
   const cap=CFG.player.cap||200; const capped=data.length>cap; data=data.slice(0,cap);
   document.getElementById('ptbl-desc').textContent=U().player_desc(CFG.player.min,eligible.length,capped,cap,CFG.player.minLabel);
   drawTable('ptbl',CFG.player.cols,data,sortP,(col)=>{ if(sortP.col===col)sortP.dir=sortP.dir==='asc'?'desc':'asc'; else sortP={col,dir:CFG.player.cols.find(c=>c[0]===col)[2]==='txt'?'asc':'desc'}; render(); },{nameLogo:true});
+}
+function renderPlayerTable2(){
+  const map=accumPlayer(pFilt()); const modal=m=>[...m.entries()].sort((a,b)=>b[1]-a[1])[0][0];
+  let data=[...map.entries()].map(([pl,e])=>CFG.player2.row(RAW.players[pl],RAW.teams[modal(e.team)],e.c,e.gp,(RAW.playerPos||[])[pl]));
+  const eligible=data.filter(d=>d.__min>=CFG.player2.min); data=eligible; data.sort((a,b)=>cmp(a,b,sortP2));
+  const cap=CFG.player2.cap||200; const capped=data.length>cap; data=data.slice(0,cap);
+  document.getElementById('ptbl-desc2').textContent=U().player_desc(CFG.player2.min,eligible.length,capped,cap,CFG.player2.minLabel);
+  drawTable('ptbl2',CFG.player2.cols,data,sortP2,(col)=>{ if(sortP2.col===col)sortP2.dir=sortP2.dir==='asc'?'desc':'asc'; else sortP2={col,dir:CFG.player2.cols.find(c=>c[0]===col)[2]==='txt'?'asc':'desc'}; render(); },{nameLogo:true});
 }
 function cmp(a,b,st){ const x=a[st.col],y=b[st.col]; const c=x<y?-1:x>y?1:0; return st.dir==='asc'?c:-c; }
 function drawTable(id,cols,data,st,onSort,opts){ data.sort((a,b)=>cmp(a,b,st)); const wrap=document.getElementById(id); wrap.replaceChildren();
@@ -331,7 +346,8 @@ function setStaticChrome(){
   document.getElementById('comp-desc').textContent=U().comp_desc;
   document.getElementById('team-tbl-title').textContent=U().team_tbl_title;
   document.getElementById('team-tbl-desc').textContent=U().team_tbl_desc;
-  const ptt=document.getElementById('player-tbl-title'); if(ptt) ptt.textContent=U().player_tbl_title;
+  const ptt=document.getElementById('player-tbl-title'); if(ptt) ptt.textContent=(CFG.player&&CFG.player.title)||U().player_tbl_title;
+  const ptt2=document.getElementById('player-tbl-title2'); if(ptt2) ptt2.textContent=(CFG.player2&&CFG.player2.title)||U().player_tbl_title;
   const compAllOpt=document.querySelector('#f-comp option[value="all"]'); if(compAllOpt) compAllOpt.textContent=U().all_comp;
   document.getElementById('lang-toggle').textContent=U().lang_btn;
   document.getElementById('logout-btn').textContent=U().logout_btn;
@@ -366,6 +382,7 @@ async function doLogout(){
 (function(){
   const nav=document.querySelector(`.navlinks a[data-nav="${CFG.active}"]`); if(nav)nav.classList.add('active');
   if(!CFG.player){ const pc=document.getElementById('player-card'); if(pc)pc.remove(); }
+  if(!CFG.player2){ const pc2=document.getElementById('player-card2'); if(pc2)pc2.remove(); }
   const cs=document.getElementById('f-comp'); RAW.comps.forEach(c=>{ const o=document.createElement('option');o.value=c;o.textContent=c;cs.appendChild(o); });
   document.getElementById('lang-toggle').addEventListener('click',()=>{ LANG=LANG==='ja'?'en':'ja'; localStorage.setItem('rugbyAnalyticsLang',LANG); fullRefresh(); });
   document.getElementById('logout-btn').addEventListener('click', doLogout);
