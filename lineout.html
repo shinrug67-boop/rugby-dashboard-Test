@@ -140,8 +140,8 @@ const CFG_JA = {
   teamCols:[['name','チーム','txt'],['gp','試合','int'],['lo','ラインアウト/試合','f1'],['lop','LO成功%','pct'],['steal','LOスティール/試合','f1'],['maul','モール/試合','f1'],['maulp','モール成功%','pct'],['maultry','モールトライ/試合','f1']],
   teamRow:(name,c)=>({name,gp:c.__m,lo:c.__m?c.lo_total/c.__m:0,lop:c.lo_total?c.lo_won/c.lo_total*100:0,steal:c.__m?c.lo_steal/c.__m:0,maul:c.__m?c.maul/c.__m:0,maulp:c.maul?c.maul_won/c.maul*100:0,maultry:c.__m?c.maul_try/c.__m:0}),
   player:{ title:'選手別 詳細テーブル — ラインアウトキャッチ', minKey:'lo_catch_total', min:15, minLabel:'ラインアウトキャッチ回数', cap:200,
-    cols:[['name','選手','txt'],['gp','出場','int'],['catch','キャッチ/試合','f1'],['catchPct','キャッチ成功%','pct'],['steal','スティール/試合','f1']],
-    row:(name,team,c,gp)=>({name,team,gp,__min:c.lo_catch_total,catch:gp?c.lo_catch_total/gp:0,catchPct:c.lo_catch_total?c.lo_catch_won/c.lo_catch_total*100:0,steal:gp?c.lo_steal/gp:0}) },
+    cols:[['name','選手','txt'],['gp','出場','int'],['catchTotal','総キャッチ回数','int'],['catch','キャッチ/試合','f1'],['catchPct','キャッチ成功%','pct'],['stealTotal','総スティール回数','int'],['steal','スティール/試合','f1']],
+    row:(name,team,c,gp)=>({name,team,gp,__min:c.lo_catch_total,catchTotal:c.lo_catch_total,catch:gp?c.lo_catch_total/gp:0,catchPct:c.lo_catch_total?c.lo_catch_won/c.lo_catch_total*100:0,stealTotal:c.lo_steal,steal:gp?c.lo_steal/gp:0}) },
   player2:{ title:'選手別 詳細テーブル — ラインアウトスロー(HO)', minKey:'lo_throw_total', min:15, minLabel:'ラインアウトスロー回数', cap:200,
     cols:[['name','選手','txt'],['gp','出場','int'],['throwTotal','総スロー回数','int'],['throw','スロー/試合','f1'],['throwPct','スロー精度%','pct']],
     row:(name,team,c,gp)=>({name,team,gp,__min:c.lo_throw_total,throwTotal:c.lo_throw_total,throw:gp?c.lo_throw_total/gp:0,throwPct:c.lo_throw_total?c.lo_throw_won/c.lo_throw_total*100:0}) }
@@ -168,8 +168,8 @@ const CFG_EN = {
   teamCols:[['name','Team','txt'],['gp','GP','int'],['lo','Lineouts/match','f1'],['lop','LO success%','pct'],['steal','LO steals/match','f1'],['maul','Mauls/match','f1'],['maulp','Maul success%','pct'],['maultry','Maul tries/match','f1']],
   teamRow:(name,c)=>({name,gp:c.__m,lo:c.__m?c.lo_total/c.__m:0,lop:c.lo_total?c.lo_won/c.lo_total*100:0,steal:c.__m?c.lo_steal/c.__m:0,maul:c.__m?c.maul/c.__m:0,maulp:c.maul?c.maul_won/c.maul*100:0,maultry:c.__m?c.maul_try/c.__m:0}),
   player:{ title:'Player Detail Table — Lineout Catches', minKey:'lo_catch_total', min:15, minLabel:'lineout catches', cap:200,
-    cols:[['name','Player','txt'],['gp','Caps','int'],['catch','Catches/match','f1'],['catchPct','Catch success%','pct'],['steal','Steals/match','f1']],
-    row:(name,team,c,gp)=>({name,team,gp,__min:c.lo_catch_total,catch:gp?c.lo_catch_total/gp:0,catchPct:c.lo_catch_total?c.lo_catch_won/c.lo_catch_total*100:0,steal:gp?c.lo_steal/gp:0}) },
+    cols:[['name','Player','txt'],['gp','Caps','int'],['catchTotal','Total catches','int'],['catch','Catches/match','f1'],['catchPct','Catch success%','pct'],['stealTotal','Total steals','int'],['steal','Steals/match','f1']],
+    row:(name,team,c,gp)=>({name,team,gp,__min:c.lo_catch_total,catchTotal:c.lo_catch_total,catch:gp?c.lo_catch_total/gp:0,catchPct:c.lo_catch_total?c.lo_catch_won/c.lo_catch_total*100:0,stealTotal:c.lo_steal,steal:gp?c.lo_steal/gp:0}) },
   player2:{ title:'Player Detail Table — Lineout Throws (Hooker)', minKey:'lo_throw_total', min:15, minLabel:'lineout throws', cap:200,
     cols:[['name','Player','txt'],['gp','Caps','int'],['throwTotal','Total throws','int'],['throw','Throws/match','f1'],['throwPct','Throw accuracy%','pct']],
     row:(name,team,c,gp)=>({name,team,gp,__min:c.lo_throw_total,throwTotal:c.lo_throw_total,throw:gp?c.lo_throw_total/gp:0,throwPct:c.lo_throw_total?c.lo_throw_won/c.lo_throw_total*100:0}) }
