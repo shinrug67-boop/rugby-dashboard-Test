@@ -121,7 +121,7 @@ const RAW = {"comps":["Gallagher Prem","Investec Champions Cup","Japan Rugby Lea
 const CFG_JA = {
   doctitle:'ラインアウト分析 — Rugby Analytics', active:'lineout', title:'ラインアウト分析(1試合平均)',
   sub:'7コンペ・1,493試合(2024〜2026) | 数量は1試合平均、率は合計比 | 定義はPower BIメジャーに整合 | データ: Opta (Stats Perform)',
-  foot:'定義: ラインアウト成功率=Won ÷ 自スロー(フォーメーション2〜10の投入) / ラインアウトスティール=Lineout Take の Steal / モール成功率=Won(Outright/Try Scored/Penalty Won/Penalty Try)÷モール / モールトライ=Try Scored+Penalty Try。ラインアウトキャッチ=Lineout Take(Steal以外)、成功=Won系 / スロー精度=Lineout Throw(フォーメーション投入のみ)、成功=Won系 / 成功キャッチ数・成功スロー数=総回数×成功率(回数と成功率の両方を反映した総合ランキング指標、デフォルトのソート列)。数量は1試合平均、率は合計÷合計。選手別はラウンドフィルタ適用外。データ: Opta(Stats Perform, Level 2 Restricted)。',
+  foot:'定義: ラインアウト成功率=Won ÷ 自スロー(フォーメーション2〜10の投入) / ラインアウトスティール=Lineout Take の Steal / モール成功率=Won(Outright/Try Scored/Penalty Won/Penalty Try)÷モール / モールトライ=Try Scored+Penalty Try。ラインアウトキャッチ=Lineout Take(Steal以外)、成功=Won系(捕球者が特定できた行のみ記録されるため、キャッチ成功率はほぼ常に100%) / スロー精度=Lineout Throw(フォーメーション投入のみ)、成功=Won系 / 成功スロー数=総スロー回数×スロー精度(回数と精度の両方を反映した総合ランキング指標、デフォルトのソート列)。数量は1試合平均、率は合計÷合計。選手別はラウンドフィルタ適用外。データ: Opta(Stats Perform, Level 2 Restricted)。',
   metrics:[
     {key:'lo_pct',label:'ラインアウト成功率(%)',fmt:'pct',val:c=>c.lo_total?c.lo_won/c.lo_total*100:0,denom:'lo_total',min:80},
     {key:'lo_steal_pm',label:'ラインアウトスティール/試合',fmt:'f1',val:c=>c.__m?c.lo_steal/c.__m:0},
@@ -140,8 +140,8 @@ const CFG_JA = {
   teamCols:[['name','チーム','txt'],['gp','試合','int'],['lo','ラインアウト/試合','f1'],['lop','LO成功%','pct'],['steal','LOスティール/試合','f1'],['maul','モール/試合','f1'],['maulp','モール成功%','pct'],['maultry','モールトライ/試合','f1']],
   teamRow:(name,c)=>({name,gp:c.__m,lo:c.__m?c.lo_total/c.__m:0,lop:c.lo_total?c.lo_won/c.lo_total*100:0,steal:c.__m?c.lo_steal/c.__m:0,maul:c.__m?c.maul/c.__m:0,maulp:c.maul?c.maul_won/c.maul*100:0,maultry:c.__m?c.maul_try/c.__m:0}),
   player:{ title:'選手別 詳細テーブル — ラインアウトキャッチ', minKey:'lo_catch_total', min:15, minLabel:'ラインアウトキャッチ回数', cap:200,
-    cols:[['name','選手','txt'],['gp','出場','int'],['catchWon','成功キャッチ数','int'],['catchTotal','総キャッチ回数','int'],['catch','キャッチ/試合','f1'],['catchPct','キャッチ成功%','pct'],['stealTotal','総スティール回数','int'],['steal','スティール/試合','f1']],
-    row:(name,team,c,gp)=>({name,team,gp,__min:c.lo_catch_total,catchWon:c.lo_catch_won,catchTotal:c.lo_catch_total,catch:gp?c.lo_catch_total/gp:0,catchPct:c.lo_catch_total?c.lo_catch_won/c.lo_catch_total*100:0,stealTotal:c.lo_steal,steal:gp?c.lo_steal/gp:0}) },
+    cols:[['name','選手','txt'],['gp','出場','int'],['catchTotal','総キャッチ回数','int'],['catch','キャッチ/試合','f1'],['catchPct','キャッチ成功%','pct'],['stealTotal','総スティール回数','int'],['steal','スティール/試合','f1']],
+    row:(name,team,c,gp)=>({name,team,gp,__min:c.lo_catch_total,catchTotal:c.lo_catch_total,catch:gp?c.lo_catch_total/gp:0,catchPct:c.lo_catch_total?c.lo_catch_won/c.lo_catch_total*100:0,stealTotal:c.lo_steal,steal:gp?c.lo_steal/gp:0}) },
   player2:{ title:'選手別 詳細テーブル — ラインアウトスロー(HO)', minKey:'lo_throw_total', min:15, minLabel:'ラインアウトスロー回数', cap:200,
     cols:[['name','選手','txt'],['gp','出場','int'],['throwWon','成功スロー数','int'],['throwTotal','総スロー回数','int'],['throw','スロー/試合','f1'],['throwPct','スロー精度%','pct']],
     row:(name,team,c,gp)=>({name,team,gp,__min:c.lo_throw_total,throwWon:c.lo_throw_won,throwTotal:c.lo_throw_total,throw:gp?c.lo_throw_total/gp:0,throwPct:c.lo_throw_total?c.lo_throw_won/c.lo_throw_total*100:0}) }
@@ -149,7 +149,7 @@ const CFG_JA = {
 const CFG_EN = {
   doctitle:'Lineout Analysis — Rugby Analytics', active:'lineout', title:'Lineout Analysis (per-match average)',
   sub:'7 competitions · 1,493 matches (2024–2026) | Counts are per-match average, rates are total ÷ total | Definitions aligned with Power BI measures | Data: Opta (Stats Perform)',
-  foot:'Definitions: Lineout success rate = Won ÷ own throws (formation throws of 2–10 only) / Lineout steal = Lineout Take Steal variants / Maul success rate = Won (Outright/Try Scored/Penalty Won/Penalty Try) ÷ mauls / Maul tries = Try Scored + Penalty Try. Lineout catch = Lineout Take excluding Steal, success = Won variants / Throw accuracy = Lineout Throw (formation throws only), success = Won variants / Successful catches/throws = total × success rate (a combined volume+accuracy ranking metric, the default sort column). Counts are per-match average, rates are total ÷ total. Player tables ignore the round filter. Data: Opta (Stats Perform, Level 2 Restricted).',
+  foot:'Definitions: Lineout success rate = Won ÷ own throws (formation throws of 2–10 only) / Lineout steal = Lineout Take Steal variants / Maul success rate = Won (Outright/Try Scored/Penalty Won/Penalty Try) ÷ mauls / Maul tries = Try Scored + Penalty Try. Lineout catch = Lineout Take excluding Steal, success = Won variants (only rows with an identifiable catcher get recorded at all, so catch success is nearly always 100%) / Throw accuracy = Lineout Throw (formation throws only), success = Won variants / Successful throws = total throws × accuracy (a combined volume+accuracy ranking metric, the default sort column on the throw table). Counts are per-match average, rates are total ÷ total. Player tables ignore the round filter. Data: Opta (Stats Perform, Level 2 Restricted).',
   metrics:[
     {key:'lo_pct',label:'Lineout success rate (%)',fmt:'pct',val:c=>c.lo_total?c.lo_won/c.lo_total*100:0,denom:'lo_total',min:80},
     {key:'lo_steal_pm',label:'Lineout steals / match',fmt:'f1',val:c=>c.__m?c.lo_steal/c.__m:0},
@@ -168,8 +168,8 @@ const CFG_EN = {
   teamCols:[['name','Team','txt'],['gp','GP','int'],['lo','Lineouts/match','f1'],['lop','LO success%','pct'],['steal','LO steals/match','f1'],['maul','Mauls/match','f1'],['maulp','Maul success%','pct'],['maultry','Maul tries/match','f1']],
   teamRow:(name,c)=>({name,gp:c.__m,lo:c.__m?c.lo_total/c.__m:0,lop:c.lo_total?c.lo_won/c.lo_total*100:0,steal:c.__m?c.lo_steal/c.__m:0,maul:c.__m?c.maul/c.__m:0,maulp:c.maul?c.maul_won/c.maul*100:0,maultry:c.__m?c.maul_try/c.__m:0}),
   player:{ title:'Player Detail Table — Lineout Catches', minKey:'lo_catch_total', min:15, minLabel:'lineout catches', cap:200,
-    cols:[['name','Player','txt'],['gp','Caps','int'],['catchWon','Successful catches','int'],['catchTotal','Total catches','int'],['catch','Catches/match','f1'],['catchPct','Catch success%','pct'],['stealTotal','Total steals','int'],['steal','Steals/match','f1']],
-    row:(name,team,c,gp)=>({name,team,gp,__min:c.lo_catch_total,catchWon:c.lo_catch_won,catchTotal:c.lo_catch_total,catch:gp?c.lo_catch_total/gp:0,catchPct:c.lo_catch_total?c.lo_catch_won/c.lo_catch_total*100:0,stealTotal:c.lo_steal,steal:gp?c.lo_steal/gp:0}) },
+    cols:[['name','Player','txt'],['gp','Caps','int'],['catchTotal','Total catches','int'],['catch','Catches/match','f1'],['catchPct','Catch success%','pct'],['stealTotal','Total steals','int'],['steal','Steals/match','f1']],
+    row:(name,team,c,gp)=>({name,team,gp,__min:c.lo_catch_total,catchTotal:c.lo_catch_total,catch:gp?c.lo_catch_total/gp:0,catchPct:c.lo_catch_total?c.lo_catch_won/c.lo_catch_total*100:0,stealTotal:c.lo_steal,steal:gp?c.lo_steal/gp:0}) },
   player2:{ title:'Player Detail Table — Lineout Throws (Hooker)', minKey:'lo_throw_total', min:15, minLabel:'lineout throws', cap:200,
     cols:[['name','Player','txt'],['gp','Caps','int'],['throwWon','Successful throws','int'],['throwTotal','Total throws','int'],['throw','Throws/match','f1'],['throwPct','Throw accuracy%','pct']],
     row:(name,team,c,gp)=>({name,team,gp,__min:c.lo_throw_total,throwWon:c.lo_throw_won,throwTotal:c.lo_throw_total,throw:gp?c.lo_throw_total/gp:0,throwPct:c.lo_throw_total?c.lo_throw_won/c.lo_throw_total*100:0}) }
