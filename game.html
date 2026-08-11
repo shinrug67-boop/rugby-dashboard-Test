@@ -118,6 +118,7 @@ const UI = {
       tackles:'タックル', tackle_pct:'タックル成功率', tk_missed:'ミスタックル', tk_pen_conceded:'タックル反則',
       scrum_pct:'スクラム成功率', lo_pct:'ラインアウト成功率' },
     gainline:'ゲインライン率', roster_title:'選手ロースター', roster_p:'選手','roster_t':'出場(分)','roster_a':'Action/Min',
+    roster_carries:'キャリー', roster_carrym:'キャリーm', roster_kicks:'キック', roster_kickm:'キックm',
     tackle_title:'タックル成否(選手別)', tk_succ:'成功', tk_miss:'ミス', lang_btn:'EN',
     logout_btn:'ログアウト',
     foot:'指標定義: LQB%=Ruck 0–3秒÷総ラック / DF Beaten=Attacking Qualities×Defender Beaten / Linebreak=Initial+Supported Break / Offload=Pass×Offload(Own Player/To Ground/To Opposition) / 22mトライ率=22mエントリーのうちトライで終わった割合 / KIP獲得m=Kick in Play(Own 22含む)のDistance+合計 / タックル成功率=Missed/Ineffectiveを除く / Scrum%=Won系÷自ボールスクラム / Lineout%=Won系÷自スロー(フォーメーション投入)。前半/後半は延長戦を後半に含める。データ: Opta(Stats Perform, Level 2 Restricted)。このページはログインしたチームメンバーのみ閲覧できます。' },
@@ -131,6 +132,7 @@ const UI = {
       tackles:'Tackle', tackle_pct:'Tackle%', tk_missed:'Miss Tackle', tk_pen_conceded:'DF Penalties',
       scrum_pct:'Scrum%', lo_pct:'Lineout%' },
     gainline:'GainLine%', roster_title:'Player Roster', roster_p:'Player','roster_t':'Time','roster_a':'Action/Min',
+    roster_carries:'Carries', roster_carrym:'Carry m', roster_kicks:'Kicks', roster_kickm:'Kick m',
     tackle_title:'Tackle Attempts (by player)', tk_succ:'Success', tk_miss:'Miss', lang_btn:'日本語',
     logout_btn:'Sign out',
     foot:'Definitions: LQB% = Ruck 0–3s ÷ all rucks / DF Beaten = Attacking Qualities × Defender Beaten / Linebreak = Initial + Supported Break / Offload = Pass × Offload (Own Player/To Ground/To Opposition) / 22m Try% = share of 22m entries ending in a try / KIP mtr = Distance+ on Kick in Play (incl. Own 22) / Tackle% excludes Missed/Ineffective / Scrum% = Won variants ÷ own-ball scrums / Lineout% = Won variants ÷ own throws (formation throws only). Extra time folds into the 2nd half. Data: Opta (Stats Perform, Level 2 Restricted). This page is only visible to signed-in team members.' }
@@ -290,14 +292,16 @@ async function render(){
   const rWrap = document.createElement('div'); rWrap.className='rosters';
   [0,1].forEach(side=>{
     const players = playerRows.filter(r=>r.side===side)
-      .map(r=>({shirt:r.shirt, name:PLAYERS[r.player_id], time:r.time, apm:r.apm}))
+      .map(r=>({shirt:r.shirt, name:PLAYERS[r.player_id], time:r.time, apm:r.apm,
+                carries:r.carries||0, carry_distplus:r.carry_distplus||0, kicks:r.kicks||0, kick_mtr:r.kick_mtr||0}))
       .sort((a,b)=>(a.shirt||99)-(b.shirt||99));
     const box = document.createElement('div'); box.className='roster-scroll';
     const table = document.createElement('table'); table.className='roster';
-    table.innerHTML = `<thead><tr><th>#</th><th>${U().roster_p}</th><th>${U().roster_t}</th><th>${U().roster_a}</th></tr></thead>`;
+    table.innerHTML = `<thead><tr><th>#</th><th>${U().roster_p}</th><th>${U().roster_t}</th><th>${U().roster_a}</th><th>${U().roster_carries}</th><th>${U().roster_carrym}</th><th>${U().roster_kicks}</th><th>${U().roster_kickm}</th></tr></thead>`;
     const tbody = document.createElement('tbody');
     players.forEach(p=>{ const tr=document.createElement('tr');
-      tr.innerHTML = `<td>${p.shirt||'–'}</td><td>${p.name}</td><td>${Math.round(p.time)}</td><td>${p.apm.toFixed(2)}</td>`;
+      tr.innerHTML = `<td>${p.shirt||'–'}</td><td>${p.name}</td><td>${Math.round(p.time)}</td><td>${p.apm.toFixed(2)}</td>`
+        + `<td>${p.carries}</td><td>${Math.round(p.carry_distplus)}</td><td>${p.kicks}</td><td>${Math.round(p.kick_mtr)}</td>`;
       tbody.appendChild(tr); });
     table.appendChild(tbody); box.appendChild(table); rWrap.appendChild(box);
   });
