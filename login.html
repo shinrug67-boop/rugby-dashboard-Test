@@ -48,8 +48,22 @@ const COOKIE_MAX_AGE = 60 * 60 * 12; // 12 hours
 // Emails allowed to see recruit.html (university recruiting comparison --
 // management staff only, not the general player/coach roster). Add/remove
 // addresses here and redeploy to change who can reach that page.
+//
+// The 33 front-office/team-staff accounts created via
+// scripts/create_users.py (see TBL Master File/scripts/staff_emails.csv,
+// sourced from 【名簿】2026-27.xlsx's スタッフ sheet) are all "Staff" --
+// normal dashboard access, same tier as players/coaches. Of those, the
+// following 6 are additionally "Management" (GM/Assistant GM/Team
+// Director/Head Coach/Coaching Coordinator/Team Manager) and get
+// recruit.html access too:
 const MANAGEMENT_EMAILS = [
   'shinrug67@gmail.com',
+  'm.kunda0929@gmail.com',       // GM -- 薫田真広
+  'y.morii1833@gmail.com',       // Assistant GM -- 森井康浩
+  'takahiro.t.1107@gmail.com',   // Team Director -- 高木貴裕
+  'joshsyms.hobm@gmail.com',     // Head Coach -- Joshua Syms
+  'yskz514@gmail.com',           // Coaching Coordinator -- 森田佳寿
+  'rshimaji0@gmail.com',         // Team Manager -- 島地利奈
 ];
 function setAuthCookies(email){
   document.cookie = `sb-auth=1; Path=/; Max-Age=${COOKIE_MAX_AGE}; SameSite=Lax; Secure`;
