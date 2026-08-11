@@ -78,7 +78,7 @@ footer { margin-top:28px; font-size:12px; color:var(--ink-muted); border-top:1px
   <button id="logout-btn" type="button"></button>
   <button id="lang-toggle" type="button">EN</button>
 </nav>
-<script>(function(){if(document.cookie.split('; ').some(function(c){return c.trim()==='role=management';})){var el=document.getElementById('nav-recruit');if(el)el.style.display='';}})();</script>
+<script>(function(){if(!document.cookie.split('; ').some(function(c){return c.trim()==='role=management';}))return;var el=document.getElementById('nav-recruit');if(el)el.style.display='';var reveal=function(){var t=document.getElementById('t-recruit');if(t)t.style.display='';};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',reveal);else reveal();})();</script>
 <div class="wrap">
   <div class="hero">
     <h1>Rugby Analytics</h1>
@@ -128,6 +128,11 @@ footer { margin-top:28px; font-size:12px; color:var(--ink-muted); border-top:1px
       <p id="t-compare-p">2選手のスタッツを合計・1試合平均で比較。フォワードはラインアウトの個人スタッツも見られます。</p>
       <div class="chips" id="t-compare-chips"></div>
     </a>
+    <a class="tile" href="recruit.html" id="t-recruit" style="display:none">
+      <div class="top"><span class="ico">🎓</span><h2 id="t-recruit-h2">大学生比較</h2><span class="badge" id="t-recruit-badge">公開中</span><span class="arrow">→</span></div>
+      <p id="t-recruit-p">大学生選手を選手比較と同じ形式で比較(リクルート用)。マネジメント限定。</p>
+      <div class="chips" id="t-recruit-chips"></div>
+    </a>
   </div>
 
   <div class="note" id="note-box">
@@ -164,7 +169,9 @@ const I18N = {
       game:{h2:'試合サマリー', p:'試合単位のチーム比較・選手出場データ。1試合を選び、前半/後半別のスタッツと選手ロースターを見られます。',
         chips:['前半/後半別スタッツ','スコア','GainLine%','タックル成否(選手別)','出場時間']},
       compare:{h2:'選手比較', p:'2選手のスタッツを合計・1試合平均で比較。フォワードはラインアウトの個人スタッツも見られます。',
-        chips:['キャリー/パス/オフロード','タックル/ジャッカル','キック数と内訳','Ruck OOA','ラインアウト個人成績(HO/LO)']}
+        chips:['キャリー/パス/オフロード','タックル/ジャッカル','キック数と内訳','Ruck OOA','ラインアウト個人成績(HO/LO)']},
+      recruit:{h2:'大学生比較', p:'大学生選手を選手比較と同じ形式で比較(リクルート用)。マネジメント限定。',
+        chips:['キャリー/パス/オフロード','タックル/ジャッカル','キック数と内訳','スクラム(FW)']}
     },
     note_html:'<b>使い方.</b> 各ページ上部のフィルタ(コンペティション / シーズン / ラウンド / チーム)で対象を絞り込み、「チャート指標」で見たい数字に切り替えます。数量は<b>1試合平均</b>、率は<b>合計÷合計</b>で算出。ページ間は上部メニューでいつでも行き来できます。各指標の正確な定義は、各ページ下部のフッターに記載しています。',
     footer:'データ: Opta (Stats Perform) BIイベントデータ(Security Level 2 - Restricted)。集計定義は Power BI メジャーに整合。取り扱いには元データのライセンス条件が適用されます。'
@@ -190,7 +197,9 @@ const I18N = {
       game:{h2:'Game Summary', p:'Match-level team comparison and player appearances. Pick a fixture to see 1st/2nd-half stats and the player roster.',
         chips:['1st/2nd half stats','Score','GainLine%','Tackle outcomes (by player)','Time on pitch']},
       compare:{h2:'Player Compare', p:'Compare two players\' stats as totals and per-match averages. Forwards also get individual lineout stats.',
-        chips:['Carries/passes/offloads','Tackles/jackal','Kicks & breakdown','Ruck OOA','Lineout stats (HO/LO)']}
+        chips:['Carries/passes/offloads','Tackles/jackal','Kicks & breakdown','Ruck OOA','Lineout stats (HO/LO)']},
+      recruit:{h2:'University Compare', p:'Compare university players in the same format as Player Compare (for recruiting). Management only.',
+        chips:['Carries/passes/offloads','Tackles/jackal','Kicks & breakdown','Scrum (forwards)']}
     },
     note_html:'<b>How to use.</b> Use the filters at the top of each page (competition / season / round / team) to narrow the data, and the "chart metric" dropdown to switch what you\'re looking at. Counts are shown as <b>per-match average</b>, rates as <b>total ÷ total</b>. Move between pages any time via the top menu. Exact definitions for each metric are listed in the footer at the bottom of each page.',
     footer:'Data: Opta (Stats Perform) BI event data (Security Level 2 - Restricted). Definitions are aligned with Power BI measures. Use is subject to the source data\'s license terms.'
@@ -217,7 +226,7 @@ function applyLang(){
   document.getElementById('stat-season-l').textContent = d.stat_season;
   document.getElementById('stat-team-l').textContent = d.stat_team;
   document.getElementById('sec-h').textContent = d.sec_h;
-  ['kick','attack','defense','lineout','scrum','game','compare'].forEach(key=>{
+  ['kick','attack','defense','lineout','scrum','game','compare','recruit'].forEach(key=>{
     const t = d.tiles[key];
     document.getElementById('t-'+key+'-h2').textContent = t.h2;
     document.getElementById('t-'+key+'-badge').textContent = d.badge;
