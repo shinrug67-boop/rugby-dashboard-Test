@@ -4,7 +4,8 @@
 // The 29 teams added when NPC/International/Tour Match/EPCR Challenge Cup joined the dataset
 // were sourced from Wikipedia (union/national-team crest where one exists; national flag as a
 // fallback for a handful of minor rugby nations with no dedicated logo file on Wikipedia --
-// Belgium/Chile/Portugal/Hong Kong/USA/Tonga).
+// Belgium/Hong Kong remain flag fallbacks; Chile/Portugal/Tonga/USA were manually replaced with
+// their real union crests afterward).
 const TEAM_LOGO = {
   "Bath Rugby":"bath.png","Union Bordeaux-Begles":"bordeaux-begles.svg","Bristol Bears":"bristol-bears.svg",
   "Bulls":"bulls.png","Cardiff Rugby":"cardiff.png","ASM Clermont Auvergne":"clermont.svg","Connacht Rugby":"connacht.svg",
@@ -34,9 +35,9 @@ const TEAM_LOGO = {
   "Counties Manukau":"counties-manukau.png","Hawke's Bay":"hawkes-bay.svg","Manawatū":"manawatu.png",
   "North Harbour":"north-harbour.svg","Northland":"northland.png","Otago":"otago.jpg","Southland":"southland.png",
   "Taranaki":"taranaki.svg","Tasman":"tasman.png","Waikato":"waikato.png","Wellington":"wellington.png",
-  "Belgium":"belgium.svg","Canada":"canada.png","Chile":"chile.svg","Georgia":"georgia.png","Namibia":"namibia.svg",
-  "Portugal":"portugal.svg","Romania":"romania.png","Samoa":"samoa.png","Spain":"spain.svg","Tonga":"tonga.png",
-  "USA":"usa.svg","Uruguay":"uruguay.png",
+  "Belgium":"belgium.svg","Canada":"canada.png","Chile":"chile.png","Georgia":"georgia.png","Namibia":"namibia.svg",
+  "Portugal":"portugal.png","Romania":"romania.png","Samoa":"samoa.png","Spain":"spain.svg","Tonga":"tonga.png",
+  "USA":"usa.png","Uruguay":"uruguay.png",
   "Cheetahs":"cheetahs.svg","Black Lion":"black-lion.png","Hong Kong":"hong-kong.svg"
 };
 function teamLogoSrc(name){ const f = TEAM_LOGO[name]; return f ? ('logos/' + f) : null; }
