@@ -123,9 +123,9 @@ const CFG_JA = {
   sub:'11コンペ・1,882試合(2023〜2027) | 数量は1試合平均、率は合計比 | 定義はPower BIメジャーに整合 | データ: Opta (Stats Perform)',
   foot:'定義: アタックスクラム成功率=Won(Try/Penalty/Outright/Penalty Try/Free Kick)÷自ボールスクラム / ディフェンススクラムPressure%=相手ボールスクラムで相手がLost(Outright/Free Kick/Pen Con/Reversed)となった割合 / ディフェンススクラム成功率=同条件+相手のWon Outright(反則にならなければ成功)。数量は1試合平均、率は合計÷合計。選手別テーブルはフロントロー(LO/HO/TH)でアタックスクラム参加回数が一定以上の選手のみ。データ: Opta(Stats Perform, Level 2 Restricted)。選手別はラウンドフィルタ適用外。',
   metrics:[
-    {key:'atk_scrum_pct',label:'アタックスクラム成功率(%)',fmt:'pct',val:c=>c.scrum?c.scrum_won/c.scrum*100:0,denom:'scrum',min:50},
-    {key:'def_scrum_pressure_pct',label:'ディフェンススクラムPressure%',fmt:'pct',val:c=>c.def_scrum_total?c.def_scrum_pressure/c.def_scrum_total*100:0,denom:'def_scrum_total',min:50},
-    {key:'def_scrum_pct',label:'ディフェンススクラム成功率(%)',fmt:'pct',val:c=>c.def_scrum_total?c.def_scrum_success/c.def_scrum_total*100:0,denom:'def_scrum_total',min:50},
+    {key:'atk_scrum_pct',label:'アタックスクラム成功率(%)',fmt:'pct',val:c=>c.scrum?c.scrum_won/c.scrum*100:0,denom:'scrum',min:8},
+    {key:'def_scrum_pressure_pct',label:'ディフェンススクラムPressure%',fmt:'pct',val:c=>c.def_scrum_total?c.def_scrum_pressure/c.def_scrum_total*100:0,denom:'def_scrum_total',min:8},
+    {key:'def_scrum_pct',label:'ディフェンススクラム成功率(%)',fmt:'pct',val:c=>c.def_scrum_total?c.def_scrum_success/c.def_scrum_total*100:0,denom:'def_scrum_total',min:8},
     {key:'scrum_pm',label:'アタックスクラム/試合',fmt:'f1',val:c=>c.__m?c.scrum/c.__m:0},
     {key:'def_scrum_pm',label:'ディフェンススクラム/試合',fmt:'f1',val:c=>c.__m?c.def_scrum_total/c.__m:0},
     {key:'scrum_pen_pm',label:'スクラムPK獲得/試合',fmt:'f1',val:c=>c.__m?c.scrum_pen/c.__m:0}
@@ -148,9 +148,9 @@ const CFG_EN = {
   sub:'11 competitions · 1,882 matches (2023–2027) | Counts are per-match average, rates are total ÷ total | Definitions aligned with Power BI measures | Data: Opta (Stats Perform)',
   foot:'Definitions: Attack scrum success rate = Won (Try/Penalty/Outright/Penalty Try/Free Kick) ÷ own-ball scrums / Defense scrum Pressure% = share of opponent-ball scrums where the opponent Lost (Outright/Free Kick/Pen Con/Reversed) / Defense scrum success rate = same set + opponent Won Outright (success = no penalty conceded). Counts are per-match average, rates are total ÷ total. Player table is limited to front row (loosehead/hooker/tighthead) with a meaningful number of attack-scrum appearances. Data: Opta (Stats Perform, Level 2 Restricted). Player table ignores the round filter.',
   metrics:[
-    {key:'atk_scrum_pct',label:'Attack scrum success rate (%)',fmt:'pct',val:c=>c.scrum?c.scrum_won/c.scrum*100:0,denom:'scrum',min:50},
-    {key:'def_scrum_pressure_pct',label:'Defense scrum Pressure%',fmt:'pct',val:c=>c.def_scrum_total?c.def_scrum_pressure/c.def_scrum_total*100:0,denom:'def_scrum_total',min:50},
-    {key:'def_scrum_pct',label:'Defense scrum success rate (%)',fmt:'pct',val:c=>c.def_scrum_total?c.def_scrum_success/c.def_scrum_total*100:0,denom:'def_scrum_total',min:50},
+    {key:'atk_scrum_pct',label:'Attack scrum success rate (%)',fmt:'pct',val:c=>c.scrum?c.scrum_won/c.scrum*100:0,denom:'scrum',min:8},
+    {key:'def_scrum_pressure_pct',label:'Defense scrum Pressure%',fmt:'pct',val:c=>c.def_scrum_total?c.def_scrum_pressure/c.def_scrum_total*100:0,denom:'def_scrum_total',min:8},
+    {key:'def_scrum_pct',label:'Defense scrum success rate (%)',fmt:'pct',val:c=>c.def_scrum_total?c.def_scrum_success/c.def_scrum_total*100:0,denom:'def_scrum_total',min:8},
     {key:'scrum_pm',label:'Attack scrums / match',fmt:'f1',val:c=>c.__m?c.scrum/c.__m:0},
     {key:'def_scrum_pm',label:'Defense scrums / match',fmt:'f1',val:c=>c.__m?c.def_scrum_total/c.__m:0},
     {key:'scrum_pen_pm',label:'Scrum penalties won / match',fmt:'f1',val:c=>c.__m?c.scrum_pen/c.__m:0}

@@ -123,9 +123,9 @@ const CFG_JA = {
   sub:'11コンペ・1,882試合(2023〜2027) | 数量は1試合平均、率は合計比 | 定義はPower BIメジャーに整合 | データ: Opta (Stats Perform)',
   foot:'定義: ラインアウト成功率=Won ÷ 自スロー(フォーメーション2〜10の投入) / ラインアウトスティール=Lineout Take の Steal / モール成功率=Won(Outright/Try Scored/Penalty Won/Penalty Try)÷モール / モールトライ=Try Scored+Penalty Try。ラインアウトキャッチ=Lineout Take(Steal以外)、成功=Won系(捕球者が特定できた行のみ記録されるため、キャッチ成功率はほぼ常に100%) / スロー精度=Lineout Throw(フォーメーション投入のみ)、成功=Won系 / 成功スロー数=総スロー回数×スロー精度(回数と精度の両方を反映した総合ランキング指標、デフォルトのソート列)。数量は1試合平均、率は合計÷合計。選手別はラウンドフィルタ適用外。データ: Opta(Stats Perform, Level 2 Restricted)。',
   metrics:[
-    {key:'lo_pct',label:'ラインアウト成功率(%)',fmt:'pct',val:c=>c.lo_total?c.lo_won/c.lo_total*100:0,denom:'lo_total',min:80},
+    {key:'lo_pct',label:'ラインアウト成功率(%)',fmt:'pct',val:c=>c.lo_total?c.lo_won/c.lo_total*100:0,denom:'lo_total',min:15},
     {key:'lo_steal_pm',label:'ラインアウトスティール/試合',fmt:'f1',val:c=>c.__m?c.lo_steal/c.__m:0},
-    {key:'maul_pct',label:'モール成功率(%)',fmt:'pct',val:c=>c.maul?c.maul_won/c.maul*100:0,denom:'maul',min:25},
+    {key:'maul_pct',label:'モール成功率(%)',fmt:'pct',val:c=>c.maul?c.maul_won/c.maul*100:0,denom:'maul',min:10},
     {key:'maul_try_pm',label:'モールトライ/試合',fmt:'f1',val:c=>c.__m?c.maul_try/c.__m:0},
     {key:'lo_pm',label:'ラインアウト/試合',fmt:'f1',val:c=>c.__m?c.lo_total/c.__m:0},
     {key:'maul_pm',label:'モール/試合',fmt:'f1',val:c=>c.__m?c.maul/c.__m:0}
@@ -151,9 +151,9 @@ const CFG_EN = {
   sub:'11 competitions · 1,882 matches (2023–2027) | Counts are per-match average, rates are total ÷ total | Definitions aligned with Power BI measures | Data: Opta (Stats Perform)',
   foot:'Definitions: Lineout success rate = Won ÷ own throws (formation throws of 2–10 only) / Lineout steal = Lineout Take Steal variants / Maul success rate = Won (Outright/Try Scored/Penalty Won/Penalty Try) ÷ mauls / Maul tries = Try Scored + Penalty Try. Lineout catch = Lineout Take excluding Steal, success = Won variants (only rows with an identifiable catcher get recorded at all, so catch success is nearly always 100%) / Throw accuracy = Lineout Throw (formation throws only), success = Won variants / Successful throws = total throws × accuracy (a combined volume+accuracy ranking metric, the default sort column on the throw table). Counts are per-match average, rates are total ÷ total. Player tables ignore the round filter. Data: Opta (Stats Perform, Level 2 Restricted).',
   metrics:[
-    {key:'lo_pct',label:'Lineout success rate (%)',fmt:'pct',val:c=>c.lo_total?c.lo_won/c.lo_total*100:0,denom:'lo_total',min:80},
+    {key:'lo_pct',label:'Lineout success rate (%)',fmt:'pct',val:c=>c.lo_total?c.lo_won/c.lo_total*100:0,denom:'lo_total',min:15},
     {key:'lo_steal_pm',label:'Lineout steals / match',fmt:'f1',val:c=>c.__m?c.lo_steal/c.__m:0},
-    {key:'maul_pct',label:'Maul success rate (%)',fmt:'pct',val:c=>c.maul?c.maul_won/c.maul*100:0,denom:'maul',min:25},
+    {key:'maul_pct',label:'Maul success rate (%)',fmt:'pct',val:c=>c.maul?c.maul_won/c.maul*100:0,denom:'maul',min:10},
     {key:'maul_try_pm',label:'Maul tries / match',fmt:'f1',val:c=>c.__m?c.maul_try/c.__m:0},
     {key:'lo_pm',label:'Lineouts / match',fmt:'f1',val:c=>c.__m?c.lo_total/c.__m:0},
     {key:'maul_pm',label:'Mauls / match',fmt:'f1',val:c=>c.__m?c.maul/c.__m:0}

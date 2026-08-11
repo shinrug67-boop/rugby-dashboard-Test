@@ -124,11 +124,11 @@ const CFG_JA = {
   foot:'定義: タックル成功率=(成功[Complete/Passive/Sack/Forced in Touch/Try Saver/Turnover Won]+Ineffective扱い[Offload Allowed/Pen Conceded])÷タックル(=Missedと結果Ineffectiveは分子から除外) / ドミナント=Dominant Tackle / ミスタックル=Missed Tackle / ジャッカル=Collection×Jackal、成功=Success / タックルTO獲得=Tackle×Turnover Won / 被ターンオーバー=Turnover×Error on Attack。数量は1試合平均、率は合計÷合計。データ: Opta(Stats Perform, Level 2 Restricted)。選手別はラウンドフィルタ適用外。',
   metrics:[
     {key:'tackles_pm',label:'タックル/試合',fmt:'f1',val:c=>c.__m?c.tackles/c.__m:0},
-    {key:'tackle_pct',label:'タックル成功率(%)',fmt:'pct',val:c=>{var s=c.tk_complete+c.tk_passive+c.tk_sack+c.tk_forced_touch+c.tk_try_saver+c.tk_turnover_won+c.tk_offload_allowed+c.tk_pen_conceded; return c.tackles?s/c.tackles*100:0;},denom:'tackles',min:400},
-    {key:'dom_pct',label:'ドミナントタックル率(%)',fmt:'pct',val:c=>c.tackles?c.tk_dominant/c.tackles*100:0,denom:'tackles',min:400},
+    {key:'tackle_pct',label:'タックル成功率(%)',fmt:'pct',val:c=>{var s=c.tk_complete+c.tk_passive+c.tk_sack+c.tk_forced_touch+c.tk_try_saver+c.tk_turnover_won+c.tk_offload_allowed+c.tk_pen_conceded; return c.tackles?s/c.tackles*100:0;},denom:'tackles',min:150},
+    {key:'dom_pct',label:'ドミナントタックル率(%)',fmt:'pct',val:c=>c.tackles?c.tk_dominant/c.tackles*100:0,denom:'tackles',min:150},
     {key:'missed_pm',label:'ミスタックル/試合',fmt:'f1',val:c=>c.__m?c.tk_missed/c.__m:0},
     {key:'jackal_pm',label:'ジャッカル/試合',fmt:'f1',val:c=>c.__m?c.jackal/c.__m:0},
-    {key:'jackal_pct',label:'ジャッカル成功率(%)',fmt:'pct',val:c=>c.jackal?c.jackal_won/c.jackal*100:0,denom:'jackal',min:30},
+    {key:'jackal_pct',label:'ジャッカル成功率(%)',fmt:'pct',val:c=>c.jackal?c.jackal_won/c.jackal*100:0,denom:'jackal',min:5},
     {key:'to_won_pm',label:'タックルTO獲得/試合',fmt:'f1',val:c=>c.__m?c.tk_turnover_won/c.__m:0},
     {key:'to_conceded_pm',label:'被ターンオーバー/試合',fmt:'f1',val:c=>c.__m?c.to_conceded/c.__m:0}
   ],
@@ -153,11 +153,11 @@ const CFG_EN = {
   foot:'Definitions: Tackle success rate = (success [Complete/Passive/Sack/Forced in Touch/Try Saver/Turnover Won] + treated-as-effective [Offload Allowed/Pen Conceded]) ÷ tackles (Missed and result Ineffective are excluded from the numerator) / Dominant = Dominant Tackle / Missed tackle = Missed Tackle / Jackal = Collection × Jackal, success = Success / Tackle turnovers won = Tackle × Turnover Won / Turnovers conceded = Turnover × Error on Attack. Counts are per-match average, rates are total ÷ total. Data: Opta (Stats Perform, Level 2 Restricted). Player table ignores the round filter.',
   metrics:[
     {key:'tackles_pm',label:'Tackles / match',fmt:'f1',val:c=>c.__m?c.tackles/c.__m:0},
-    {key:'tackle_pct',label:'Tackle success rate (%)',fmt:'pct',val:c=>{var s=c.tk_complete+c.tk_passive+c.tk_sack+c.tk_forced_touch+c.tk_try_saver+c.tk_turnover_won+c.tk_offload_allowed+c.tk_pen_conceded; return c.tackles?s/c.tackles*100:0;},denom:'tackles',min:400},
-    {key:'dom_pct',label:'Dominant tackle rate (%)',fmt:'pct',val:c=>c.tackles?c.tk_dominant/c.tackles*100:0,denom:'tackles',min:400},
+    {key:'tackle_pct',label:'Tackle success rate (%)',fmt:'pct',val:c=>{var s=c.tk_complete+c.tk_passive+c.tk_sack+c.tk_forced_touch+c.tk_try_saver+c.tk_turnover_won+c.tk_offload_allowed+c.tk_pen_conceded; return c.tackles?s/c.tackles*100:0;},denom:'tackles',min:150},
+    {key:'dom_pct',label:'Dominant tackle rate (%)',fmt:'pct',val:c=>c.tackles?c.tk_dominant/c.tackles*100:0,denom:'tackles',min:150},
     {key:'missed_pm',label:'Missed tackles / match',fmt:'f1',val:c=>c.__m?c.tk_missed/c.__m:0},
     {key:'jackal_pm',label:'Jackals / match',fmt:'f1',val:c=>c.__m?c.jackal/c.__m:0},
-    {key:'jackal_pct',label:'Jackal success rate (%)',fmt:'pct',val:c=>c.jackal?c.jackal_won/c.jackal*100:0,denom:'jackal',min:30},
+    {key:'jackal_pct',label:'Jackal success rate (%)',fmt:'pct',val:c=>c.jackal?c.jackal_won/c.jackal*100:0,denom:'jackal',min:5},
     {key:'to_won_pm',label:'Tackle turnovers won / match',fmt:'f1',val:c=>c.__m?c.tk_turnover_won/c.__m:0},
     {key:'to_conceded_pm',label:'Turnovers conceded / match',fmt:'f1',val:c=>c.__m?c.to_conceded/c.__m:0}
   ],
