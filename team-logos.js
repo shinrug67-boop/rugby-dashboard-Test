@@ -1,6 +1,10 @@
 // Shared team-name -> logo-file lookup, used by attack/defense/setpiece (team ranking chart),
-// game.html (score header) and compare.html (player picker cards). All 78 teams have a crest;
+// game.html (score header) and compare.html (player picker cards). All 107 teams have a crest;
 // Newcastle Falcons and Newcastle Red Bulls share the same file (same club, different season name).
+// The 29 teams added when NPC/International/Tour Match/EPCR Challenge Cup joined the dataset
+// were sourced from Wikipedia (union/national-team crest where one exists; national flag as a
+// fallback for a handful of minor rugby nations with no dedicated logo file on Wikipedia --
+// Belgium/Chile/Portugal/Hong Kong/USA/Tonga).
 const TEAM_LOGO = {
   "Bath Rugby":"bath.png","Union Bordeaux-Begles":"bordeaux-begles.svg","Bristol Bears":"bristol-bears.svg",
   "Bulls":"bulls.png","Cardiff Rugby":"cardiff.png","ASM Clermont Auvergne":"clermont.svg","Connacht Rugby":"connacht.svg",
@@ -25,6 +29,14 @@ const TEAM_LOGO = {
   "Bayonne":"bayonne.svg","Castres Olympique":"castres.png","Lyon":"lyon.svg","US Montauban":"montauban.png","USAP":"perpignan.png","RC Toulon":"toulon.png",
   "Vannes":"vannes.svg",
   "Benetton Rugby":"benetton.svg","Dragons RFC":"dragons.png","Edinburgh Rugby":"edinburgh.svg","Ospreys":"ospreys.svg",
-  "Scarlets":"scarlets.svg","Sharks":"sharks.png","Ulster Rugby":"ulster.svg","Zebre Parma":"zebre.png"
+  "Scarlets":"scarlets.svg","Sharks":"sharks.png","Ulster Rugby":"ulster.svg","Zebre Parma":"zebre.png",
+  "Auckland":"auckland.png","Bay Of Plenty":"bay-of-plenty.png","Canterbury":"canterbury.png",
+  "Counties Manukau":"counties-manukau.png","Hawke's Bay":"hawkes-bay.svg","Manawatū":"manawatu.png",
+  "North Harbour":"north-harbour.svg","Northland":"northland.png","Otago":"otago.jpg","Southland":"southland.png",
+  "Taranaki":"taranaki.svg","Tasman":"tasman.png","Waikato":"waikato.png","Wellington":"wellington.png",
+  "Belgium":"belgium.svg","Canada":"canada.png","Chile":"chile.svg","Georgia":"georgia.png","Namibia":"namibia.svg",
+  "Portugal":"portugal.svg","Romania":"romania.png","Samoa":"samoa.png","Spain":"spain.svg","Tonga":"tonga.png",
+  "USA":"usa.svg","Uruguay":"uruguay.png",
+  "Cheetahs":"cheetahs.svg","Black Lion":"black-lion.png","Hong Kong":"hong-kong.svg"
 };
 function teamLogoSrc(name){ const f = TEAM_LOGO[name]; return f ? ('logos/' + f) : null; }
