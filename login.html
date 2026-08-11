@@ -45,17 +45,22 @@ const SUPABASE_ANON_KEY = 'sb_publishable_WUHxP4DDM9FRN4JfduqDNA_-S3lCM2p';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const COOKIE_MAX_AGE = 60 * 60 * 12; // 12 hours
 
-// Emails allowed to see recruit.html (university recruiting comparison --
-// management staff only, not the general player/coach roster). Add/remove
-// addresses here and redeploy to change who can reach that page.
+// Three access tiers, checked in this order (an email can only be one
+// tier -- Management is not "Staff plus extra", it's its own category).
+// Not listed in either array below = "player" (the default; there's no
+// explicit roster for the ~70 existing player/coach accounts, so this
+// stays implicit rather than requiring one).
 //
-// The 33 front-office/team-staff accounts created via
-// scripts/create_users.py (see TBL Master File/scripts/staff_emails.csv,
-// sourced from 【名簿】2026-27.xlsx's スタッフ sheet) are all "Staff" --
-// normal dashboard access, same tier as players/coaches. Of those, the
-// following 6 are additionally "Management" (GM/Assistant GM/Team
-// Director/Head Coach/Coaching Coordinator/Team Manager) and get
-// recruit.html access too:
+// - player:     normal dashboard access (index/kick/attack/defense/
+//               lineout/scrum/game/compare). The default.
+// - staff:      same normal dashboard access as player, for now -- listed
+//               explicitly so page-level access can be split out later
+//               (e.g. a staff-only page) without re-deriving who's staff.
+// - management: normal dashboard access + recruit.html (university
+//               recruiting comparison -- sensitive, not for the general
+//               roster).
+//
+// Add/remove addresses here and redeploy to change who's in which tier.
 const MANAGEMENT_EMAILS = [
   'shinrug67@gmail.com',
   'm.kunda0929@gmail.com',       // GM -- 薫田真広
@@ -65,12 +70,47 @@ const MANAGEMENT_EMAILS = [
   'yskz514@gmail.com',           // Coaching Coordinator -- 森田佳寿
   'rshimaji0@gmail.com',         // Team Manager -- 島地利奈
 ];
+// Front-office/team-staff accounts (created via scripts/create_users.py,
+// see TBL Master File/scripts/staff_emails.csv, sourced from
+// 【名簿】2026-27.xlsx's スタッフ sheet) that are NOT already in
+// MANAGEMENT_EMAILS above.
+const STAFF_EMAILS = [
+  'toddblackadder71@gmail.com',      // Advisor -- Todd Blackadder
+  'will.j.eggleston@gmail.com',      // DF Coach -- Will Eggleston
+  'aflevans@hotmail.com',            // AT Coach -- Nick Evans
+  'brynevansvo@gmail.com',           // Head FW Coach -- Bryn Evans
+  'mizuma23@gmail.com',              // Scrum Coach -- 水間良武
+  'thel0m.g61@gmail.com',            // Assistant Coach -- 藤田貴大
+  'anisesamuela34@gmail.com',        // K9 Coach -- Anise Samuela
+  'masahikomiyao1971@gmail.com',     // High Performance Analyst -- 宮尾正彦
+  'kazuya.konuma0815@gmail.com',     // Analyst -- 小沼和也
+  'Cockatoocollins@yahoo.com',       // Head S&C Coach -- Nick Collins
+  'usuchandayo@gmail.com',           // Performance Coach -- 宇薄岳央
+  'yamato.tr1117@gmail.com',         // Assistant S&C Coach -- 小峯大和
+  'yosuke1784@gmail.com',            // Head Athletic Trainer -- 滝田陽介
+  'shinichi.k.2139@gmail.com',       // Athletic Trainer -- 近藤信一
+  'tkwk.no@gmail.com',               // Athletic Trainer -- 塚脇望
+  'kimsusong.tr@gmail.com',          // Athletic Trainer -- 金秀成
+  'ryoyamanchi@gmail.com',           // Interpreter -- 山内遼
+  '424len@gmail.com',                // Interpreter -- シンクル蓮
+  'naotoshibata.bbhc@gmail.com',     // Interpreter -- 柴田直登
+  'saori.tswork@gmail.com',          // Administrator/Interpreter -- 高橋沙麻里
+  'htakeda.tky@gmail.com',           // Team Doctor -- 武田秀樹
+  'kazuhiro04132001@gmail.com',      // Team Doctor -- 柴山一洋
+  'ken_higashiyama1104@yahoo.co.jp', // Team Doctor -- 高木健太郎
+  't_mode_teppei1001@yahoo.co.jp',   // Team Doctor -- 田中哲平
+  'hitoshi5japan@yahoo.co.jp',       // Trainer -- 石井斉
+  'ma34moriguchi@gmail.com',         // Trainer -- 森口雅司
+];
+function roleFor(email){
+  const e = (email || '').trim().toLowerCase();
+  if (MANAGEMENT_EMAILS.includes(e)) return 'management';
+  if (STAFF_EMAILS.includes(e)) return 'staff';
+  return 'player';
+}
 function setAuthCookies(email){
   document.cookie = `sb-auth=1; Path=/; Max-Age=${COOKIE_MAX_AGE}; SameSite=Lax; Secure`;
-  const isManagement = MANAGEMENT_EMAILS.includes((email||'').trim().toLowerCase());
-  document.cookie = isManagement
-    ? `mgmt-auth=1; Path=/; Max-Age=${COOKIE_MAX_AGE}; SameSite=Lax; Secure`
-    : 'mgmt-auth=; Path=/; Max-Age=0; SameSite=Lax; Secure';
+  document.cookie = `role=${roleFor(email)}; Path=/; Max-Age=${COOKIE_MAX_AGE}; SameSite=Lax; Secure`;
 }
 
 const UI = {

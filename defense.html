@@ -92,7 +92,7 @@ footer { margin-top:16px; font-size:12px; color:var(--ink-muted); }
   <button id="logout-btn" type="button"></button>
   <button id="lang-toggle" type="button">EN</button>
 </nav>
-<script>(function(){if(document.cookie.split('; ').some(function(c){return c.indexOf('mgmt-auth=')===0;})){var el=document.getElementById('nav-recruit');if(el)el.style.display='';}})();</script>
+<script>(function(){if(document.cookie.split('; ').some(function(c){return c.trim()==='role=management';})){var el=document.getElementById('nav-recruit');if(el)el.style.display='';}})();</script>
 <div class="wrap">
   <header><h1 id="page-title"></h1><div class="sub" id="page-sub"></div></header>
   <div class="filters">
@@ -363,7 +363,7 @@ function fullRefresh(){
 async function doLogout(){
   await sb.auth.signOut();
   document.cookie = 'sb-auth=; Path=/; Max-Age=0; SameSite=Lax; Secure';
-  document.cookie = 'mgmt-auth=; Path=/; Max-Age=0; SameSite=Lax; Secure';
+  document.cookie = 'role=; Path=/; Max-Age=0; SameSite=Lax; Secure';
   location.href = 'login.html';
 }
 
