@@ -1,11 +1,16 @@
 // Shared team-name -> logo-file lookup, used by attack/defense/setpiece (team ranking chart),
-// game.html (score header) and compare.html (player picker cards). All 107 teams have a crest;
-// Newcastle Falcons and Newcastle Red Bulls share the same file (same club, different season name).
-// The 29 teams added when NPC/International/Tour Match/EPCR Challenge Cup joined the dataset
-// were sourced from Wikipedia (union/national-team crest where one exists; national flag as a
-// fallback for a handful of minor rugby nations with no dedicated logo file on Wikipedia --
-// Belgium/Hong Kong remain flag fallbacks; Chile/Portugal/Tonga/USA were manually replaced with
-// their real union crests afterward).
+// game.html (score header) and compare.html (player picker cards). teamLogoSrc() returns null
+// for any name not in this map and both call sites guard on that, so a team with no entry here
+// just renders without an icon -- not an error. 110 of 114 teams have a crest; Newcastle Falcons
+// and Newcastle Red Bulls share the same file (same club, different season name). The 29 teams
+// added when NPC/International/Tour Match/EPCR Challenge Cup joined the dataset were sourced from
+// Wikipedia (union/national-team crest where one exists; national flag as a fallback for a
+// handful of minor rugby nations with no dedicated logo file on Wikipedia -- Belgium/Hong Kong
+// remain flag fallbacks; Chile/Portugal/Tonga/USA were manually replaced with their real union
+// crests afterward). 4 more teams added with Tour Match call-ups/development sides have no entry
+// at all (Ireland A/England A/Japan XV/France A) -- no dedicated crest exists on Wikipedia, and
+// the senior team's own crest would misleadingly imply they're the same team, so left blank
+// rather than guessed.
 const TEAM_LOGO = {
   "Bath Rugby":"bath.png","Union Bordeaux-Begles":"bordeaux-begles.svg","Bristol Bears":"bristol-bears.svg",
   "Bulls":"bulls.png","Cardiff Rugby":"cardiff.png","ASM Clermont Auvergne":"clermont.svg","Connacht Rugby":"connacht.svg",
@@ -38,6 +43,7 @@ const TEAM_LOGO = {
   "Belgium":"belgium.svg","Canada":"canada.png","Chile":"chile.png","Georgia":"georgia.png","Namibia":"namibia.svg",
   "Portugal":"portugal.png","Romania":"romania.png","Samoa":"samoa.png","Spain":"spain.svg","Tonga":"tonga.png",
   "USA":"usa.png","Uruguay":"uruguay.png",
-  "Cheetahs":"cheetahs.svg","Black Lion":"black-lion.png","Hong Kong":"hong-kong.svg"
+  "Cheetahs":"cheetahs.svg","Black Lion":"black-lion.png","Hong Kong":"hong-kong.svg",
+  "Argentina XV":"argentina-xv.png","Maori All Blacks":"maori-all-blacks.png","Barbarians":"barbarians.png"
 };
 function teamLogoSrc(name){ const f = TEAM_LOGO[name]; return f ? ('logos/' + f) : null; }
