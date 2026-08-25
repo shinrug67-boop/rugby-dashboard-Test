@@ -34,6 +34,17 @@ header .sub { font-size:12.5px; color:var(--ink-2); margin-top:2px; }
   background:var(--page); border:1px solid #3a3a42; border-radius:6px;
 }
 .fg select:disabled { opacity:.45; }
+.msel { position:relative; }
+.msel-btn { padding:6px 28px 6px 10px; font-size:14px; font-weight:600; color:var(--ink-1); max-width:230px; min-width:110px;
+  text-align:left; background:var(--page) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23c5a059'/%3E%3C/svg%3E") no-repeat right 10px center;
+  border:1px solid #3a3a42; border-radius:6px; cursor:pointer; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.msel-btn:hover { background-color:rgba(255,255,255,.04); }
+.msel-panel { display:none; position:absolute; top:calc(100% + 4px); left:0; z-index:25; min-width:230px; max-height:280px; overflow:auto;
+  background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:6px; box-shadow:0 10px 28px rgba(0,0,0,.55); }
+.msel-panel.open { display:block; }
+.msel-opt { display:flex; align-items:center; gap:8px; padding:6px 8px; border-radius:5px; cursor:pointer; font-size:13px; color:var(--ink-2); white-space:nowrap; }
+.msel-opt:hover { background:rgba(255,255,255,.06); }
+.msel-opt input { accent-color:var(--gold); cursor:pointer; }
 .legend { display:flex; gap:16px; flex-wrap:wrap; margin:8px 0 14px; }
 .legend .li { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--ink-2); }
 .legend .sw { width:12px; height:12px; border-radius:3px; }
@@ -122,7 +133,7 @@ footer { margin-top:16px; font-size:12px; color:var(--ink-muted); }
   </header>
 
   <div class="filters">
-    <div class="fg"><label for="f-comp" id="lbl-comp">コンペティション</label><select id="f-comp"><option value="all">全コンペ</option></select></div>
+    <div class="fg"><label id="lbl-comp">コンペティション</label><div class="msel" id="msel-comp"><button type="button" class="msel-btn" id="f-comp-btn" aria-haspopup="listbox" aria-expanded="false"></button><div class="msel-panel" id="f-comp-panel" role="listbox" aria-multiselectable="true"></div></div></div>
     <div class="fg"><label for="f-season" id="lbl-season">シーズン</label><select id="f-season"><option value="all">全シーズン</option></select></div>
     <div class="fg"><label for="f-round" id="lbl-round">ラウンド</label><select id="f-round" disabled><option value="all">全節</option></select></div>
     <div class="fg"><label for="f-team" id="lbl-team">チーム</label><select id="f-team"><option value="all">全チーム</option></select></div>
@@ -239,6 +250,7 @@ const UI = {
     logout_btn:'ログアウト',
     f_comp:'コンペティション', f_season:'シーズン', f_round:'ラウンド', f_team:'チーム', f_type:'キック種類',
     all_comp:'全コンペ', all_season:'全シーズン', all_round:'全節', all_team:'全チーム',
+    n_selected:(n)=>`${n}件選択中`,
     lbl_k_total:'コンテストキック', lbl_k_ret:'再獲得(味方確保)', lbl_k_pre:'相手エラー誘発', lbl_k_win:'実効勝率', lbl_k_lost:'相手確保',
     k_win_n:'(再獲得+相手エラー) ÷ インフィールド', lang_btn:'EN',
     comp_h3:'コンペティション別 結果内訳', comp_desc:'実効勝率の高い順。シーズン・キック種類フィルタのみ適用(コンペ・ラウンド・チームは常に全体)',
@@ -271,6 +283,7 @@ const UI = {
     logout_btn:'Sign out',
     f_comp:'Competition', f_season:'Season', f_round:'Round', f_team:'Team', f_type:'Kick type',
     all_comp:'All competitions', all_season:'All seasons', all_round:'All rounds', all_team:'All teams',
+    n_selected:(n)=>`${n} selected`,
     lbl_k_total:'Contestable kicks', lbl_k_ret:'Regained (own gather)', lbl_k_pre:'Forced error', lbl_k_win:'Effective win rate', lbl_k_lost:'Opposition secured',
     k_win_n:'(Regained + forced error) ÷ infield', lang_btn:'日本語',
     comp_h3:'Outcome Breakdown by Competition', comp_desc:'Sorted by effective win rate. Only season & kick-type filters apply (competition/round/team always shown in full)',
@@ -448,12 +461,14 @@ function vStacked100(containerId, groups){
 
 /* ---------- filters ---------- */
 const F = {
-  comp: () => document.getElementById('f-comp').value,
+  comp: () => mv('f-comp'),
   season: () => document.getElementById('f-season').value,
   round: () => document.getElementById('f-round').value,
   team: () => document.getElementById('f-team').value,
   type: () => document.getElementById('f-type').value,
 };
+// Multi-select: array of checked checkbox values in a #<id>-panel; [] means "all" (no filter).
+function mv(id){ return [...document.querySelectorAll('#'+id+'-panel input[type=checkbox]:checked')].map(cb=>cb.value); }
 function matchOutcomeType(rKtype, type){
   if (type === 'bb') return rKtype === 0 || rKtype === 1;
   return String(rKtype) === type;
@@ -462,7 +477,7 @@ function tFiltered(ignore){
   ignore = ignore || {};
   const comp = F.comp(), season = F.season(), round = F.round(), team = F.team(), type = F.type();
   return RAW.T.filter(r =>
-    (ignore.comp   || comp==='all'   || RAW.comps[r[0]] === comp) &&
+    (ignore.comp   || comp.length===0 || comp.includes(RAW.comps[r[0]])) &&
     (ignore.season || season==='all' || String(r[1]) === season) &&
     (ignore.round  || round==='all'  || String(r[2]) === round) &&
     (ignore.team   || team==='all'   || RAW.teams[r[3]] === team) &&
@@ -471,7 +486,7 @@ function tFiltered(ignore){
 function pFiltered(){
   const comp = F.comp(), season = F.season(), team = F.team(), type = F.type();
   return RAW.P.filter(r =>
-    (comp==='all'   || RAW.comps[r[0]] === comp) &&
+    (comp.length===0 || comp.includes(RAW.comps[r[0]])) &&
     (season==='all' || String(r[1]) === season) &&
     (team==='all'   || RAW.teams[r[2]] === team) &&
     matchOutcomeType(r[4], type));
@@ -480,7 +495,7 @@ function tdFiltered(){
   const comp = F.comp(), season = F.season(), team = F.team(), di = distIdx(F.type());
   return RAW.TD.filter(r =>
     r[3]===di &&
-    (comp==='all'   || RAW.comps[r[0]] === comp) &&
+    (comp.length===0 || comp.includes(RAW.comps[r[0]])) &&
     (season==='all' || String(r[1]) === season) &&
     (team==='all'   || RAW.teams[r[2]] === team));
 }
@@ -488,7 +503,7 @@ function pdFiltered(){
   const comp = F.comp(), season = F.season(), team = F.team(), di = distIdx(F.type());
   return RAW.PD.filter(r =>
     r[4]===di &&
-    (comp==='all'   || RAW.comps[r[0]] === comp) &&
+    (comp.length===0 || comp.includes(RAW.comps[r[0]])) &&
     (season==='all' || String(r[1]) === season) &&
     (team==='all'   || RAW.teams[r[2]] === team));
 }
@@ -507,12 +522,12 @@ function repopulate(sel, values, current, allLabel){
 function syncDependentFilters(){
   const comp = F.comp();
   // seasons available for comp
-  const rows = RAW.T.filter(r => comp==='all' || RAW.comps[r[0]]===comp);
+  const rows = RAW.T.filter(r => comp.length===0 || comp.includes(RAW.comps[r[0]]));
   const seasons = [...new Set(rows.map(r=>r[1]))].sort();
   repopulate('f-season', seasons, F.season(), U().all_season);
-  // rounds: only when a specific comp is chosen
+  // rounds: only when exactly one comp is chosen (round numbering isn't comparable across competitions)
   const rSel = document.getElementById('f-round');
-  if (comp==='all') { rSel.replaceChildren(); const o=document.createElement('option'); o.value='all'; o.textContent=U().all_round; rSel.appendChild(o); rSel.disabled = true; }
+  if (comp.length!==1) { rSel.replaceChildren(); const o=document.createElement('option'); o.value='all'; o.textContent=U().all_round; rSel.appendChild(o); rSel.disabled = true; }
   else {
     const season = F.season();
     const rr = rows.filter(r => season==='all' || String(r[1])===season);
@@ -525,6 +540,24 @@ function syncDependentFilters(){
   const tr = rows.filter(r => season==='all' || String(r[1])===season);
   const teams = [...new Set(tr.map(r=>RAW.teams[r[3]]))].sort();
   repopulate('f-team', teams, F.team(), U().all_team);
+}
+function buildCompMsel(){
+  const panel = document.getElementById('f-comp-panel'); panel.replaceChildren();
+  RAW.comps.forEach((c,i) => {
+    const id = 'msel-comp-opt-'+i;
+    const row = document.createElement('label'); row.className='msel-opt'; row.htmlFor=id;
+    const cb = document.createElement('input'); cb.type='checkbox'; cb.value=c; cb.id=id;
+    const span = document.createElement('span'); span.textContent=c;
+    row.appendChild(cb); row.appendChild(span); panel.appendChild(row);
+    cb.addEventListener('change', () => { updateCompBtnLabel(); document.getElementById('f-round').value='all'; syncDependentFilters(); render(); });
+  });
+}
+function updateCompBtnLabel(){
+  const sel = F.comp(); const btn = document.getElementById('f-comp-btn');
+  btn.textContent = sel.length===0 ? U().all_comp : sel.length===1 ? sel[0] : U().n_selected(sel.length);
+}
+function closeAllMsels(){
+  document.querySelectorAll('.msel-panel.open').forEach(p => { p.classList.remove('open'); const btn=p.previousElementSibling; if (btn) btn.setAttribute('aria-expanded','false'); });
 }
 
 /* ---------- render ---------- */
@@ -1010,7 +1043,7 @@ function setStaticChrome(){
   document.getElementById('team-tbl-desc').textContent = U().team_tbl_desc;
   document.getElementById('player-tbl-h3').textContent = U().player_tbl_h3;
   document.getElementById('page-footer').textContent = U().footer;
-  const compAllOpt = document.querySelector('#f-comp option[value="all"]'); if (compAllOpt) compAllOpt.textContent = U().all_comp;
+  updateCompBtnLabel();
   document.getElementById('lang-toggle').textContent = U().lang_btn;
   document.getElementById('logout-btn').textContent=U().logout_btn;
 }
@@ -1033,10 +1066,10 @@ async function doLogout(){
 }
 
 (function(){
-  const cs = document.getElementById('f-comp');
-  RAW.comps.forEach(cname => {
-    const o = document.createElement('option'); o.value = cname; o.textContent = cname; cs.appendChild(o);
-  });
+  buildCompMsel();
+  document.getElementById('f-comp-btn').addEventListener('click', (e)=>{ e.stopPropagation(); const p=document.getElementById('f-comp-panel'); const willOpen=!p.classList.contains('open'); closeAllMsels(); if (willOpen) { p.classList.add('open'); e.currentTarget.setAttribute('aria-expanded','true'); } });
+  document.getElementById('f-comp-panel').addEventListener('click', e=>e.stopPropagation());
+  document.addEventListener('click', closeAllMsels);
   document.getElementById('lang-toggle').addEventListener('click', ()=>{
     LANG = LANG==='ja' ? 'en' : 'ja';
     localStorage.setItem('rugbyAnalyticsLang', LANG);
@@ -1044,7 +1077,6 @@ async function doLogout(){
   });
   document.getElementById('logout-btn').addEventListener('click', doLogout);
   fullRefresh();
-  document.getElementById('f-comp').addEventListener('change', ()=>{ document.getElementById('f-round').value='all'; syncDependentFilters(); render(); });
   document.getElementById('f-season').addEventListener('change', ()=>{ syncDependentFilters(); render(); });
   ['f-round','f-team','f-type'].forEach(id =>
     document.getElementById(id).addEventListener('change', render));

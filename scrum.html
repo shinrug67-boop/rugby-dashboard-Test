@@ -39,6 +39,17 @@ header .sub { font-size:12.5px; color:var(--ink-2); margin-top:2px; }
 .fg select { padding:6px 10px; font-size:16px; color:var(--ink-1); max-width:230px;
   background:var(--page); border:1px solid #3a3a42; border-radius:6px; }
 .fg select:disabled { opacity:.45; }
+.msel { position:relative; }
+.msel-btn { padding:6px 28px 6px 10px; font-size:14px; font-weight:600; color:var(--ink-1); max-width:230px; min-width:110px;
+  text-align:left; background:var(--page) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23c5a059'/%3E%3C/svg%3E") no-repeat right 10px center;
+  border:1px solid #3a3a42; border-radius:6px; cursor:pointer; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.msel-btn:hover { background-color:rgba(255,255,255,.04); }
+.msel-panel { display:none; position:absolute; top:calc(100% + 4px); left:0; z-index:25; min-width:230px; max-height:280px; overflow:auto;
+  background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:6px; box-shadow:0 10px 28px rgba(0,0,0,.55); }
+.msel-panel.open { display:block; }
+.msel-opt { display:flex; align-items:center; gap:8px; padding:6px 8px; border-radius:5px; cursor:pointer; font-size:13px; color:var(--ink-2); white-space:nowrap; }
+.msel-opt:hover { background:rgba(255,255,255,.06); }
+.msel-opt input { accent-color:var(--gold); cursor:pointer; }
 .kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:var(--gap); margin:10px 0 var(--gap); }
 .kpi { background:var(--surface); border:1px solid var(--border); border-top:3px solid var(--red); border-radius:var(--radius); padding:13px 16px; transition:border-top-color .1s; }
 .kpi.active { border-top-color:var(--gold); }
@@ -96,7 +107,7 @@ footer { margin-top:16px; font-size:12px; color:var(--ink-muted); }
 <div class="wrap">
   <header><h1 id="page-title"></h1><div class="sub" id="page-sub"></div></header>
   <div class="filters">
-    <div class="fg"><label for="f-comp" id="lbl-comp">コンペティション</label><select id="f-comp"><option value="all">全コンペ</option></select></div>
+    <div class="fg"><label id="lbl-comp">コンペティション</label><div class="msel" id="msel-comp"><button type="button" class="msel-btn" id="f-comp-btn" aria-haspopup="listbox" aria-expanded="false"></button><div class="msel-panel" id="f-comp-panel" role="listbox" aria-multiselectable="true"></div></div></div>
     <div class="fg"><label for="f-season" id="lbl-season">シーズン</label><select id="f-season"><option value="all">全シーズン</option></select></div>
     <div class="fg"><label for="f-round" id="lbl-round">ラウンド</label><select id="f-round" disabled><option value="all">全節</option></select></div>
     <div class="fg"><label for="f-team" id="lbl-team">チーム</label><select id="f-team"><option value="all">全チーム</option></select></div>
@@ -172,6 +183,7 @@ const UI = {
   ja:{ nav_home:'ホーム', nav_kick:'キック', nav_attack:'アタック', nav_defense:'ディフェンス', nav_lineout:'ラインアウト', nav_scrum:'スクラム', nav_game:'試合サマリー', nav_compare:'選手比較', nav_recruit:'大学生比較',
     f_comp:'コンペティション', f_season:'シーズン', f_round:'ラウンド', f_team:'チーム', f_metric:'チャート指標',
     all_comp:'全コンペ', all_season:'全シーズン', all_round:'全節', all_team:'全チーム',
+    n_selected:(n)=>`${n}件選択中`,
     rank_prefix:'チーム別ランキング — ', comp_prefix:'コンペティション比較 — ', comp_desc:'選択中の指標でリーグを比較(1試合平均)',
     team_tbl_title:'チーム別 詳細テーブル', team_tbl_desc:'見出しクリックでソート。数量は1試合平均、率は合計比',
     player_tbl_title:'選手別 詳細テーブル', lang_btn:'EN',
@@ -181,6 +193,7 @@ const UI = {
   en:{ nav_home:'Home', nav_kick:'Kicking', nav_attack:'Attack', nav_defense:'Defense', nav_lineout:'Lineout', nav_scrum:'Scrum', nav_game:'Game Summary', nav_compare:'Player Compare', nav_recruit:'University Compare',
     f_comp:'Competition', f_season:'Season', f_round:'Round', f_team:'Team', f_metric:'Chart metric',
     all_comp:'All competitions', all_season:'All seasons', all_round:'All rounds', all_team:'All teams',
+    n_selected:(n)=>`${n} selected`,
     rank_prefix:'Team Ranking — ', comp_prefix:'Competition Comparison — ', comp_desc:'Compares leagues on the selected metric (per-match average)',
     team_tbl_title:'Team Detail Table', team_tbl_desc:'Click a header to sort. Counts are per-match average; rates are total ÷ total',
     player_tbl_title:'Player Detail Table', lang_btn:'日本語',
@@ -209,12 +222,14 @@ function f1(v){ return v.toFixed(1); }
 function el(tag,attrs,parent){ const e=document.createElementNS(NS,tag); for(const k in attrs)e.setAttribute(k,attrs[k]); if(parent)parent.appendChild(e); return e; }
 function emptyC(metrics){ const c={__m:0}; metrics.forEach(m=>c[m]=0); return c; }
 
-const F={ comp:()=>v('f-comp'), season:()=>v('f-season'), round:()=>v('f-round'), team:()=>v('f-team'), metric:()=>v('f-metric') };
+const F={ comp:()=>mv('f-comp'), season:()=>v('f-season'), round:()=>v('f-round'), team:()=>v('f-team'), metric:()=>v('f-metric') };
 function v(id){ return document.getElementById(id).value; }
+// Multi-select: array of checked checkbox values in a #<id>-panel; [] means "all" (no filter).
+function mv(id){ return [...document.querySelectorAll('#'+id+'-panel input[type=checkbox]:checked')].map(cb=>cb.value); }
 function tFilt(ig){ ig=ig||{}; const comp=F.comp(),season=F.season(),round=F.round(),team=F.team();
-  return RAW.T.filter(r=>(ig.comp||comp==='all'||RAW.comps[r[0]]===comp)&&(ig.season||season==='all'||String(r[1])===season)&&(ig.round||round==='all'||String(r[2])===round)&&(ig.team||team==='all'||RAW.teams[r[3]]===team)); }
+  return RAW.T.filter(r=>(ig.comp||comp.length===0||comp.includes(RAW.comps[r[0]]))&&(ig.season||season==='all'||String(r[1])===season)&&(ig.round||round==='all'||String(r[2])===round)&&(ig.team||team==='all'||RAW.teams[r[3]]===team)); }
 function pFilt(){ const comp=F.comp(),season=F.season(),team=F.team();
-  return RAW.P.filter(r=>(comp==='all'||RAW.comps[r[0]]===comp)&&(season==='all'||String(r[1])===season)&&(team==='all'||RAW.teams[r[2]]===team)); }
+  return RAW.P.filter(r=>(comp.length===0||comp.includes(RAW.comps[r[0]]))&&(season==='all'||String(r[1])===season)&&(team==='all'||RAW.teams[r[2]]===team)); }
 function accumTeam(rows,keyFn){ const map=new Map();
   for(const r of rows){ const k=keyFn(r); let c=map.get(k); if(!c){c=emptyC(TM);map.set(k,c);} TM.forEach(m=>c[m]+=r[tIdx[m]]); c.__m++; } return map; }
 function accumPlayer(rows){ const map=new Map();
@@ -298,11 +313,24 @@ function drawTable(id,cols,data,st,onSort,opts){ data.sort((a,b)=>cmp(a,b,st)); 
   table.appendChild(tb); wrap.appendChild(table); }
 function repop(sel,values,current,allLabel){ const s=document.getElementById(sel); s.replaceChildren(); const a=document.createElement('option'); a.value='all'; a.textContent=allLabel; s.appendChild(a);
   values.forEach(v=>{ const o=document.createElement('option'); o.value=String(v); o.textContent=String(v); s.appendChild(o); }); s.value=values.map(String).includes(current)?current:'all'; }
-function syncFilters(){ const comp=F.comp(); const rows=RAW.T.filter(r=>comp==='all'||RAW.comps[r[0]]===comp);
+function syncFilters(){ const comp=F.comp(); const rows=RAW.T.filter(r=>comp.length===0||comp.includes(RAW.comps[r[0]]));
   repop('f-season',[...new Set(rows.map(r=>r[1]))].sort(),F.season(),U().all_season); const rSel=document.getElementById('f-round');
-  if(comp==='all'){ rSel.replaceChildren(); const o=document.createElement('option');o.value='all';o.textContent=U().all_round;rSel.appendChild(o); rSel.disabled=true; }
+  // Round numbering isn't comparable across competitions (see [[rugby-total-data-round-collision-bug]]-type
+  // caveats) so the Round filter only makes sense with exactly one competition selected.
+  if(comp.length!==1){ rSel.replaceChildren(); const o=document.createElement('option');o.value='all';o.textContent=U().all_round;rSel.appendChild(o); rSel.disabled=true; }
   else { const season=F.season(); const rr=rows.filter(r=>season==='all'||String(r[1])===season); repop('f-round',[...new Set(rr.map(r=>r[2]))].sort((a,b)=>a-b),F.round(),U().all_round); rSel.disabled=false; }
   const season=F.season(); const tr=rows.filter(r=>season==='all'||String(r[1])===season); repop('f-team',[...new Set(tr.map(r=>RAW.teams[r[3]]))].sort(),F.team(),U().all_team); }
+function buildCompMsel(){
+  const panel=document.getElementById('f-comp-panel'); panel.replaceChildren();
+  RAW.comps.forEach((c,i)=>{ const id='msel-comp-opt-'+i; const row=document.createElement('label'); row.className='msel-opt'; row.htmlFor=id;
+    const cb=document.createElement('input'); cb.type='checkbox'; cb.value=c; cb.id=id;
+    const span=document.createElement('span'); span.textContent=c;
+    row.appendChild(cb); row.appendChild(span); panel.appendChild(row);
+    cb.addEventListener('change',()=>{ updateCompBtnLabel(); document.getElementById('f-round').value='all'; syncFilters(); render(); }); });
+}
+function updateCompBtnLabel(){ const sel=F.comp(); const btn=document.getElementById('f-comp-btn');
+  btn.textContent = sel.length===0 ? U().all_comp : sel.length===1 ? sel[0] : U().n_selected(sel.length); }
+function closeAllMsels(){ document.querySelectorAll('.msel-panel.open').forEach(p=>{ p.classList.remove('open'); const btn=p.previousElementSibling; if(btn) btn.setAttribute('aria-expanded','false'); }); }
 function setStaticChrome(){
   document.documentElement.lang=LANG;
   document.title=CFG.doctitle;
@@ -328,7 +356,7 @@ function setStaticChrome(){
   document.getElementById('team-tbl-desc').textContent=U().team_tbl_desc;
   const ptt=document.getElementById('player-tbl-title'); if(ptt) ptt.textContent=(CFG.player&&CFG.player.title)||U().player_tbl_title;
   const ptt2=document.getElementById('player-tbl-title2'); if(ptt2) ptt2.textContent=(CFG.player2&&CFG.player2.title)||U().player_tbl_title;
-  const compAllOpt=document.querySelector('#f-comp option[value="all"]'); if(compAllOpt) compAllOpt.textContent=U().all_comp;
+  updateCompBtnLabel();
   document.getElementById('lang-toggle').textContent=U().lang_btn;
   document.getElementById('logout-btn').textContent=U().logout_btn;
 }
@@ -363,11 +391,13 @@ async function doLogout(){
   const nav=document.querySelector(`.navlinks a[data-nav="${CFG.active}"]`); if(nav)nav.classList.add('active');
   if(!CFG.player){ const pc=document.getElementById('player-card'); if(pc)pc.remove(); }
   if(!CFG.player2){ const pc2=document.getElementById('player-card2'); if(pc2)pc2.remove(); }
-  const cs=document.getElementById('f-comp'); RAW.comps.forEach(c=>{ const o=document.createElement('option');o.value=c;o.textContent=c;cs.appendChild(o); });
+  buildCompMsel();
+  document.getElementById('f-comp-btn').addEventListener('click',(e)=>{ e.stopPropagation(); const p=document.getElementById('f-comp-panel'); const willOpen=!p.classList.contains('open'); closeAllMsels(); if(willOpen){ p.classList.add('open'); e.currentTarget.setAttribute('aria-expanded','true'); } });
+  document.getElementById('f-comp-panel').addEventListener('click',e=>e.stopPropagation());
+  document.addEventListener('click',closeAllMsels);
   document.getElementById('lang-toggle').addEventListener('click',()=>{ LANG=LANG==='ja'?'en':'ja'; localStorage.setItem('rugbyAnalyticsLang',LANG); fullRefresh(); });
   document.getElementById('logout-btn').addEventListener('click', doLogout);
   fullRefresh();
-  document.getElementById('f-comp').addEventListener('change',()=>{ document.getElementById('f-round').value='all'; syncFilters(); render(); });
   document.getElementById('f-season').addEventListener('change',()=>{ syncFilters(); render(); });
   ['f-round','f-team','f-metric'].forEach(id=>document.getElementById(id).addEventListener('change',render));
   let rT; addEventListener('resize',()=>{ clearTimeout(rT); rT=setTimeout(render,150); });
