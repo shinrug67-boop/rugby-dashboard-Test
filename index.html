@@ -6,58 +6,90 @@
 <title>Rugby Analytics — 分析ハブ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 :root {
   color-scheme: dark;
-  --page:#08080a; --surface:#14141a;
-  --ink-1:#f3f4f6; --ink-2:#c9cdd6; --ink-muted:#a0aec0;
-  --border:rgba(197,160,89,.28); --gold:#c5a059; --red:#ff0b24; --deepred:#6e0007;
-  --accent:#c5a059; --radius:10px; --chip:#1c1c22;
+  --page:#08080a; --surface:#14141a; --surface-2:#1b1b23;
+  --ink-1:#f3f4f6; --ink-2:#c9cdd6; --ink-muted:#8b93a3;
+  --border:rgba(197,160,89,.24); --border-strong:rgba(197,160,89,.5);
+  --gold:#c5a059; --gold-soft:#e7cd94; --red:#ff0b24; --deepred:#6e0007;
+  --accent:#c5a059; --radius:14px; --chip:#1c1c22;
+  --shadow-lift: 0 22px 44px -18px rgba(0,0,0,.65), 0 2px 6px rgba(0,0,0,.35);
 }
 body { font-family: Montserrat, system-ui, -apple-system, "Segoe UI", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
-  background:radial-gradient(1400px 700px at 12% -10%, rgba(197,160,89,.07), transparent 55%), radial-gradient(1200px 650px at 100% -5%, rgba(255,11,36,.05), transparent 55%), linear-gradient(180deg, #101014 0%, var(--page) 480px);
+  background:
+    radial-gradient(1500px 760px at 10% -12%, rgba(197,160,89,.11), transparent 55%),
+    radial-gradient(1300px 700px at 102% -8%, rgba(255,11,36,.08), transparent 55%),
+    linear-gradient(180deg, #101014 0%, var(--page) 460px);
   color:var(--ink-1); line-height:1.6; }
+.disp { font-family:"Bebas Neue", Montserrat, sans-serif; letter-spacing:.03em; font-weight:400; }
 .topnav{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:18px;flex-wrap:wrap;
-  background:var(--surface);border-bottom:1px solid var(--border);padding:10px 18px;}
-.topnav .brand{font-weight:800;font-size:15px;color:var(--gold);text-decoration:none;white-space:nowrap;letter-spacing:.02em;}
+  background:rgba(20,20,26,.86); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border);padding:10px 18px;}
+.topnav::after{content:'';position:absolute;left:0;right:0;top:100%;height:2px;
+  background:linear-gradient(90deg, transparent, var(--gold) 20%, var(--red) 55%, transparent 85%); opacity:.55;}
+.topnav .brand{font-weight:800;font-size:15px;color:var(--gold);text-decoration:none;white-space:nowrap;letter-spacing:.02em;
+  display:flex; align-items:center; gap:7px;}
 .topnav .navlinks{display:flex;gap:4px;flex-wrap:wrap;}
-.topnav .navlinks a{font-size:13px;color:var(--ink-2);text-decoration:none;padding:6px 12px;border-radius:6px;white-space:nowrap;font-weight:600;}
-.topnav .navlinks a:hover{background:rgba(255,255,255,.06);}
-.topnav .navlinks a.active{background:var(--red);color:#fff;}
+.topnav .navlinks a{font-size:13px;color:var(--ink-2);text-decoration:none;padding:6px 12px;border-radius:6px;white-space:nowrap;font-weight:600;
+  transition:background .12s, color .12s;}
+.topnav .navlinks a:hover{background:rgba(255,255,255,.07);color:var(--ink-1);}
+.topnav .navlinks a.active{background:linear-gradient(135deg, var(--red), var(--deepred));color:#fff;box-shadow:0 4px 14px rgba(255,11,36,.28);}
 .topnav .spacer{flex:1;}
-#lang-toggle{font-size:12px;font-weight:700;color:var(--gold);background:var(--page);border:1px solid var(--border);
-  border-radius:6px;padding:5px 11px;cursor:pointer;white-space:nowrap;}
-#lang-toggle:hover{background:rgba(255,255,255,.06);}
-#logout-btn{font-size:12px;font-weight:700;color:var(--gold);background:var(--page);border:1px solid var(--border);
-  border-radius:6px;padding:5px 11px;cursor:pointer;white-space:nowrap;}
-#logout-btn:hover{background:rgba(255,255,255,.06);}
-.wrap { max-width:1100px; margin:0 auto; padding:34px 20px 48px; }
-.hero h1 { font-size:30px; font-weight:900; letter-spacing:.2px; color:var(--gold); text-shadow:0 4px 18px rgba(0,0,0,.5); }
-.hero p { color:var(--ink-2); margin-top:8px; max-width:680px; font-size:14.5px; }
-.stats { display:flex; gap:26px; flex-wrap:wrap; margin:22px 0 4px; }
-.stat .n { font-size:26px; font-weight:800; color:var(--gold); }
-.stat .l { font-size:12px; color:var(--ink-muted); }
-.sec-h { font-size:13px; font-weight:700; color:var(--ink-2); text-transform:uppercase; letter-spacing:.6px; margin:30px 0 12px;
-  border-left:4px solid var(--red); padding-left:10px; }
+#lang-toggle,#logout-btn{font-size:12px;font-weight:700;color:var(--gold);background:var(--page);border:1px solid var(--border);
+  border-radius:6px;padding:5px 11px;cursor:pointer;white-space:nowrap;transition:background .12s, border-color .12s;}
+#lang-toggle:hover,#logout-btn:hover{background:rgba(255,255,255,.06);border-color:var(--border-strong);}
+.wrap { max-width:1140px; margin:0 auto; padding:0 20px 56px; position:relative; }
+.hero { position:relative; padding:46px 0 30px; overflow:hidden; }
+.hero::before{ content:''; position:absolute; top:-40px; right:-60px; width:340px; height:340px; border-radius:50%;
+  background:radial-gradient(circle, rgba(197,160,89,.16), transparent 70%); pointer-events:none; }
+.eyebrow{ display:inline-flex; align-items:center; gap:8px; font-size:11.5px; font-weight:700; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--gold-soft); margin-bottom:10px; }
+.eyebrow::before{ content:''; width:22px; height:2px; background:linear-gradient(90deg, var(--red), var(--gold)); border-radius:2px; }
+.hero h1 { font-family:"Bebas Neue",Montserrat,sans-serif; font-weight:400; font-size:58px; line-height:.98; letter-spacing:.02em;
+  background:linear-gradient(135deg, var(--gold-soft) 0%, var(--gold) 45%, #fff 100%);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  text-shadow:0 8px 30px rgba(0,0,0,.4); }
+.hero p { color:var(--ink-2); margin-top:14px; max-width:640px; font-size:14.5px; }
+.stats { display:flex; gap:0; flex-wrap:wrap; margin:30px 0 4px; border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
+.stat { padding:16px 26px 16px 0; margin-right:26px; position:relative; }
+.stat:not(:last-child)::after{ content:''; position:absolute; right:0; top:18px; bottom:18px; width:1px; background:var(--border); }
+.stat .n { font-family:"Bebas Neue",Montserrat,sans-serif; font-size:34px; font-weight:400; letter-spacing:.02em; color:var(--gold);
+  font-variant-numeric:tabular-nums; }
+.stat .l { font-size:11.5px; color:var(--ink-muted); text-transform:uppercase; letter-spacing:.05em; margin-top:2px; }
+.sec-h { display:flex; align-items:center; gap:10px; font-family:"Bebas Neue",Montserrat,sans-serif; font-weight:400;
+  font-size:22px; letter-spacing:.04em; color:var(--ink-1); margin:44px 0 16px; }
+.sec-h::before{ content:''; width:5px; height:22px; border-radius:3px; background:linear-gradient(180deg, var(--red), var(--deepred)); }
 .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:16px; }
-.tile { display:flex; flex-direction:column; text-decoration:none; color:inherit; background:var(--surface);
-  border:1px solid var(--border); border-top:3px solid var(--red); border-radius:var(--radius); padding:20px 22px; transition:transform .08s, box-shadow .12s, border-color .12s; }
-a.tile:hover { transform:translateY(-2px); box-shadow:0 10px 28px rgba(0,0,0,0.5); border-color:var(--gold); }
-.tile .top { display:flex; align-items:center; gap:10px; }
-.tile .ico { font-size:22px; }
-.tile h2 { font-size:16px; font-weight:700; display:flex; align-items:center; gap:8px; }
-.tile .arrow { margin-left:auto; color:var(--ink-muted); font-size:18px; }
-.tile p { font-size:12.5px; color:var(--ink-2); margin:8px 0 12px; }
+.tile { display:flex; flex-direction:column; text-decoration:none; color:inherit; background:
+    linear-gradient(180deg, var(--surface-2) 0%, var(--surface) 100%);
+  border:1px solid var(--border); border-radius:var(--radius); padding:22px 22px 20px; position:relative; overflow:hidden;
+  transition:transform .16s cubic-bezier(.2,.8,.2,1), box-shadow .16s, border-color .16s; }
+.tile::before{ content:''; position:absolute; left:0; top:0; right:0; height:3px;
+  background:linear-gradient(90deg, var(--red), var(--gold)); opacity:.85; }
+a.tile:hover { transform:translateY(-4px); box-shadow:var(--shadow-lift); border-color:var(--border-strong); }
+a.tile:hover .ico-badge{ transform:scale(1.08) rotate(-4deg); }
+a.tile:hover .arrow{ transform:translateX(3px); color:var(--gold); }
+.tile .top { display:flex; align-items:center; gap:11px; }
+.ico-badge{ width:38px; height:38px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:18px;
+  background:linear-gradient(135deg, rgba(197,160,89,.22), rgba(255,11,36,.14)); border:1px solid var(--border);
+  transition:transform .18s cubic-bezier(.3,1.4,.4,1); flex-shrink:0; }
+.tile h2 { font-size:16px; font-weight:800; }
+.tile .arrow { margin-left:auto; color:var(--ink-muted); font-size:17px; transition:transform .16s, color .16s; }
+.tile p { font-size:12.5px; color:var(--ink-2); margin:11px 0 13px; line-height:1.55; }
 .chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:auto; }
 .chip { font-size:11px; color:var(--ink-2); background:var(--chip); border:1px solid var(--border); border-radius:20px; padding:3px 9px; white-space:nowrap; }
-.badge { font-size:10.5px; padding:2px 7px; border-radius:20px; font-weight:700;
-  background:rgba(197,160,89,.16); color:var(--gold); }
-.note { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px 18px; margin-top:16px; font-size:12.5px; color:var(--ink-2); }
+.badge { font-size:10px; padding:2.5px 8px; border-radius:20px; font-weight:800; letter-spacing:.03em;
+  background:rgba(197,160,89,.16); color:var(--gold); border:1px solid rgba(197,160,89,.3); }
+.note { background:linear-gradient(180deg, var(--surface-2), var(--surface)); border:1px solid var(--border); border-radius:var(--radius);
+  padding:18px 20px; margin-top:20px; font-size:12.5px; color:var(--ink-2); position:relative; padding-left:46px; }
+.note::before{ content:'💡'; position:absolute; left:16px; top:17px; font-size:16px; }
 .note b { color:var(--gold); }
-footer { margin-top:28px; font-size:12px; color:var(--ink-muted); border-top:1px solid var(--border); padding-top:16px; }
+footer { margin-top:32px; font-size:12px; color:var(--ink-muted); border-top:1px solid var(--border); padding-top:18px; }
+@media (max-width:640px){ .hero h1{ font-size:42px; } .stat{ padding-right:16px; margin-right:16px; } }
 </style>
 </head>
 <body>
@@ -81,55 +113,56 @@ footer { margin-top:28px; font-size:12px; color:var(--ink-muted); border-top:1px
 <script>(function(){if(!document.cookie.split('; ').some(function(c){return c.trim()==='role=management';}))return;var el=document.getElementById('nav-recruit');if(el)el.style.display='';var reveal=function(){var t=document.getElementById('t-recruit');if(t)t.style.display='';};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',reveal);else reveal();})();</script>
 <div class="wrap">
   <div class="hero">
+    <div class="eyebrow" id="eyebrow">ANALYTICS HUB</div>
     <h1>Rugby Analytics</h1>
     <p id="hero-p">Opta (Stats Perform) BIイベントデータをもとにした分析ダッシュボード集。11コンペティション・1,906試合(2023〜2027シーズン)を横断し、局面ごとの傾向を「1試合平均」で比較できます。集計定義は Power BI のメジャーに整合しています。</p>
     <div class="stats">
-      <div class="stat"><div class="n">11</div><div class="l" id="stat-comp-l">コンペティション</div></div>
-      <div class="stat"><div class="n">1,906</div><div class="l" id="stat-match-l">試合</div></div>
-      <div class="stat"><div class="n">5</div><div class="l" id="stat-season-l">シーズン (2023–27)</div></div>
-      <div class="stat"><div class="n">114</div><div class="l" id="stat-team-l">チーム</div></div>
+      <div class="stat"><div class="n" data-count="11">0</div><div class="l" id="stat-comp-l">コンペティション</div></div>
+      <div class="stat"><div class="n" data-count="1906" data-fmt="comma">0</div><div class="l" id="stat-match-l">試合</div></div>
+      <div class="stat"><div class="n" data-count="5">0</div><div class="l" id="stat-season-l">シーズン (2023–27)</div></div>
+      <div class="stat"><div class="n" data-count="114">0</div><div class="l" id="stat-team-l">チーム</div></div>
     </div>
   </div>
 
   <div class="sec-h" id="sec-h">分析ページ</div>
   <div class="grid">
     <a class="tile" href="kick.html">
-      <div class="top"><span class="ico">🎯</span><h2 id="t-kick-h2">キック</h2><span class="badge" id="t-kick-badge">公開中</span><span class="arrow">→</span></div>
+      <div class="top"><span class="ico-badge">🎯</span><h2 id="t-kick-h2">キック</h2><span class="badge" id="t-kick-badge">公開中</span><span class="arrow">→</span></div>
       <p id="t-kick-p">コンテストキック(Box / Bomb)33,651本の結果分析。空中戦をどれだけ支配できているかをチーム別・選手別に。</p>
       <div class="chips" id="t-kick-chips"></div>
     </a>
     <a class="tile" href="attack.html">
-      <div class="top"><span class="ico">⚡</span><h2 id="t-attack-h2">アタック</h2><span class="badge" id="t-attack-badge">公開中</span><span class="arrow">→</span></div>
+      <div class="top"><span class="ico-badge">⚡</span><h2 id="t-attack-h2">アタック</h2><span class="badge" id="t-attack-badge">公開中</span><span class="arrow">→</span></div>
       <p id="t-attack-p">ボールキャリーからの前進・崩しの指標。指標を選ぶとチーム別ランキングとリーグ比較が切り替わります。</p>
       <div class="chips" id="t-attack-chips"></div>
     </a>
     <a class="tile" href="defense.html">
-      <div class="top"><span class="ico">🛡️</span><h2 id="t-defense-h2">ディフェンス</h2><span class="badge" id="t-defense-badge">公開中</span><span class="arrow">→</span></div>
+      <div class="top"><span class="ico-badge">🛡️</span><h2 id="t-defense-h2">ディフェンス</h2><span class="badge" id="t-defense-badge">公開中</span><span class="arrow">→</span></div>
       <p id="t-defense-p">タックルとブレイクダウンの守備指標。タックル成功率はMissed/Ineffectiveを除く定義。チーム別・選手別。</p>
       <div class="chips" id="t-defense-chips"></div>
     </a>
     <a class="tile" href="lineout.html">
-      <div class="top"><span class="ico">🏉</span><h2 id="t-lineout-h2">ラインアウト</h2><span class="badge" id="t-lineout-badge">公開中</span><span class="arrow">→</span></div>
+      <div class="top"><span class="ico-badge">🏉</span><h2 id="t-lineout-h2">ラインアウト</h2><span class="badge" id="t-lineout-badge">公開中</span><span class="arrow">→</span></div>
       <p id="t-lineout-p">ラインアウト・モールのセットピース指標。パック(チーム)単位で比較します。</p>
       <div class="chips" id="t-lineout-chips"></div>
     </a>
     <a class="tile" href="scrum.html">
-      <div class="top"><span class="ico">💪</span><h2 id="t-scrum-h2">スクラム</h2><span class="badge" id="t-scrum-badge">公開中</span><span class="arrow">→</span></div>
+      <div class="top"><span class="ico-badge">💪</span><h2 id="t-scrum-h2">スクラム</h2><span class="badge" id="t-scrum-badge">公開中</span><span class="arrow">→</span></div>
       <p id="t-scrum-p">スクラムの成功率とペナルティ獲得。パック(チーム)単位で比較します。</p>
       <div class="chips" id="t-scrum-chips"></div>
     </a>
     <a class="tile" href="game.html">
-      <div class="top"><span class="ico">📋</span><h2 id="t-game-h2">試合サマリー</h2><span class="badge" id="t-game-badge">公開中</span><span class="arrow">→</span></div>
+      <div class="top"><span class="ico-badge">📋</span><h2 id="t-game-h2">試合サマリー</h2><span class="badge" id="t-game-badge">公開中</span><span class="arrow">→</span></div>
       <p id="t-game-p">試合単位のチーム比較・選手出場データ。1試合を選び、前半/後半別のスタッツと選手ロースターを見られます。</p>
       <div class="chips" id="t-game-chips"></div>
     </a>
     <a class="tile" href="compare.html">
-      <div class="top"><span class="ico">⚖️</span><h2 id="t-compare-h2">選手比較</h2><span class="badge" id="t-compare-badge">公開中</span><span class="arrow">→</span></div>
+      <div class="top"><span class="ico-badge">⚖️</span><h2 id="t-compare-h2">選手比較</h2><span class="badge" id="t-compare-badge">公開中</span><span class="arrow">→</span></div>
       <p id="t-compare-p">2選手のスタッツを合計・1試合平均で比較。フォワードはラインアウトの個人スタッツも見られます。</p>
       <div class="chips" id="t-compare-chips"></div>
     </a>
     <a class="tile" href="recruit.html" id="t-recruit" style="display:none">
-      <div class="top"><span class="ico">🎓</span><h2 id="t-recruit-h2">大学生比較</h2><span class="badge" id="t-recruit-badge">公開中</span><span class="arrow">→</span></div>
+      <div class="top"><span class="ico-badge">🎓</span><h2 id="t-recruit-h2">大学生比較</h2><span class="badge" id="t-recruit-badge">公開中</span><span class="arrow">→</span></div>
       <p id="t-recruit-p">大学生選手を選手比較と同じ形式で比較(リクルート用)。マネジメント限定。</p>
       <div class="chips" id="t-recruit-chips"></div>
     </a>
@@ -151,7 +184,7 @@ const I18N = {
   ja:{
     doctitle:'Rugby Analytics — 分析ハブ',
     nav_home:'ホーム', nav_kick:'キック', nav_attack:'アタック', nav_defense:'ディフェンス', nav_lineout:'ラインアウト', nav_scrum:'スクラム', nav_game:'試合サマリー', nav_compare:'選手比較', nav_recruit:'大学生比較',
-    logout_btn:'ログアウト',
+    logout_btn:'ログアウト', eyebrow:'分析プラットフォーム',
     hero_p:'Opta (Stats Perform) BIイベントデータをもとにした分析ダッシュボード集。11コンペティション・1,906試合(2023〜2027シーズン)を横断し、局面ごとの傾向を「1試合平均」で比較できます。集計定義は Power BI のメジャーに整合しています。',
     stat_comp:'コンペティション', stat_match:'試合', stat_season:'シーズン (2023–27)', stat_team:'チーム',
     sec_h:'分析ページ', badge:'公開中', lang_btn:'EN',
@@ -179,7 +212,7 @@ const I18N = {
   en:{
     doctitle:'Rugby Analytics — Hub',
     nav_home:'Home', nav_kick:'Kicking', nav_attack:'Attack', nav_defense:'Defense', nav_lineout:'Lineout', nav_scrum:'Scrum', nav_game:'Game Summary', nav_compare:'Player Compare', nav_recruit:'University Compare',
-    logout_btn:'Sign out',
+    logout_btn:'Sign out', eyebrow:'Analytics Hub',
     hero_p:'A set of analytics dashboards built on Opta (Stats Perform) BI event data. Spans 11 competitions and 1,906 matches (2023–2027 seasons), comparing trends by phase of play on a per-match-average basis. Definitions are aligned with the Power BI measures.',
     stat_comp:'Competitions', stat_match:'Matches', stat_season:'Seasons (2023–27)', stat_team:'Teams',
     sec_h:'Analysis Pages', badge:'Live', lang_btn:'日本語',
@@ -206,6 +239,21 @@ const I18N = {
   }
 };
 let LANG = localStorage.getItem('rugbyAnalyticsLang') || ((navigator.language||'').toLowerCase().startsWith('ja') ? 'ja' : 'en');
+function animateCounts(){
+  document.querySelectorAll('.stat .n[data-count]').forEach(el=>{
+    const target = parseInt(el.getAttribute('data-count'), 10);
+    const fmt = el.getAttribute('data-fmt');
+    const dur = 900; const t0 = performance.now();
+    function step(t){
+      const p = Math.min(1, (t - t0) / dur);
+      const eased = 1 - Math.pow(1 - p, 3);
+      const v = Math.round(target * eased);
+      el.textContent = fmt === 'comma' ? v.toLocaleString() : String(v);
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  });
+}
 function applyLang(){
   const d = I18N[LANG];
   document.documentElement.lang = LANG;
@@ -220,6 +268,7 @@ function applyLang(){
   document.getElementById('nav-compare').textContent = d.nav_compare;
   const navRecruit=document.getElementById('nav-recruit'); if(navRecruit) navRecruit.textContent = d.nav_recruit;
   document.getElementById('lang-toggle').textContent = d.lang_btn;
+  document.getElementById('eyebrow').textContent = d.eyebrow;
   document.getElementById('hero-p').textContent = d.hero_p;
   document.getElementById('stat-comp-l').textContent = d.stat_comp;
   document.getElementById('stat-match-l').textContent = d.stat_match;
@@ -239,6 +288,7 @@ function applyLang(){
   document.getElementById('logout-btn').textContent = d.logout_btn;
 }
 applyLang();
+animateCounts();
 document.getElementById('lang-toggle').addEventListener('click', ()=>{
   LANG = LANG==='ja' ? 'en' : 'ja';
   localStorage.setItem('rugbyAnalyticsLang', LANG);

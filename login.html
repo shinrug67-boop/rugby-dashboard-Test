@@ -4,35 +4,43 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ログイン — Rugby Analytics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
-:root { color-scheme: light;
-  --page:#f9f9f7; --surface:#fcfcfb; --ink-1:#0b0b0b; --ink-2:#52514e; --ink-muted:#898781;
-  --border:rgba(11,11,11,0.10); --radius:10px; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { color-scheme: dark;
-  --page:#0d0d0d; --surface:#1a1a19; --ink-1:#ffffff; --ink-2:#c3c2b7; --ink-muted:#898781;
-  --border:rgba(255,255,255,0.10); } }
-body { font-family: system-ui,-apple-system,"Segoe UI","Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
-  background:var(--page); color:var(--ink-1); line-height:1.5;
-  min-height:100vh; display:flex; align-items:center; justify-content:center; }
-.login-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:30px 32px; width:100%; max-width:340px; }
-.login-card .brand { font-weight:700; font-size:15px; margin-bottom:18px; }
-.login-card h2 { font-size:18px; font-weight:700; margin-bottom:16px; }
-.login-card input { width:100%; padding:10px 12px; font-size:16px; margin-bottom:10px;
-  background:var(--page); border:1px solid var(--border); border-radius:6px; color:var(--ink-1); }
-.login-card button { width:100%; padding:10px; font-size:14px; font-weight:600; color:#fff; background:#2a78d6;
-  border:none; border-radius:6px; cursor:pointer; margin-top:4px; }
-.login-card button:hover { background:#1f63b5; }
-.login-card .err { color:#d64545; font-size:12px; margin-top:8px; min-height:1em; }
-#lang-toggle{position:fixed;top:14px;right:14px;font-size:12px;font-weight:600;color:var(--ink-2);background:var(--surface);
-  border:1px solid var(--border);border-radius:6px;padding:5px 11px;cursor:pointer;}
+:root { color-scheme: dark;
+  --page:#08080a; --surface:#14141a; --surface-2:#1b1b23; --ink-1:#f3f4f6; --ink-2:#c9cdd6; --ink-muted:#8b93a3;
+  --border:rgba(197,160,89,.28); --border-strong:rgba(197,160,89,.5);
+  --gold:#c5a059; --gold-soft:#e7cd94; --red:#ff0b24; --deepred:#6e0007; --radius:14px; }
+body { font-family: Montserrat,system-ui,-apple-system,"Segoe UI","Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  background:radial-gradient(1400px 700px at 12% -10%, rgba(197,160,89,.1), transparent 55%), radial-gradient(1200px 650px at 100% 100%, rgba(255,11,36,.08), transparent 55%), linear-gradient(180deg, #101014 0%, var(--page) 480px);
+  color:var(--ink-1); line-height:1.5;
+  min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; }
+.login-card { background:linear-gradient(180deg, var(--surface-2), var(--surface)); border:1px solid var(--border);
+  border-top:3px solid var(--red); border-radius:var(--radius); padding:34px 32px 30px; width:100%; max-width:360px;
+  box-shadow:0 24px 48px -20px rgba(0,0,0,.65); }
+.login-card .brand { font-weight:800; font-size:15px; color:var(--gold); margin-bottom:6px; letter-spacing:.02em; }
+.login-card h2 { font-family:"Bebas Neue",Montserrat,sans-serif; font-weight:400; font-size:28px; letter-spacing:.03em;
+  color:var(--gold-soft); margin-bottom:20px; }
+.login-card input { width:100%; padding:11px 13px; font-size:16px; margin-bottom:11px;
+  background:var(--page); border:1px solid #3a3a42; border-radius:8px; color:var(--ink-1); transition:border-color .12s; }
+.login-card input:focus { outline:none; border-color:var(--border-strong); }
+.login-card button { width:100%; padding:11px; font-size:14px; font-weight:700; letter-spacing:.02em; color:#fff;
+  background:linear-gradient(135deg, var(--red), var(--deepred));
+  border:none; border-radius:8px; cursor:pointer; margin-top:4px; transition:box-shadow .14s, transform .14s; }
+.login-card button:hover { box-shadow:0 10px 24px -8px rgba(255,11,36,.5); transform:translateY(-1px); }
+.login-card .err { color:#ff6b6b; font-size:12px; margin-top:10px; min-height:1em; }
+#lang-toggle{position:fixed;top:14px;right:14px;font-size:12px;font-weight:700;color:var(--gold);background:var(--page);
+  border:1px solid var(--border);border-radius:6px;padding:5px 11px;cursor:pointer;transition:background .12s,border-color .12s;}
+#lang-toggle:hover{background:rgba(255,255,255,.06);border-color:var(--border-strong);}
 </style>
 </head>
 <body>
 <button id="lang-toggle" type="button">EN</button>
 <div class="login-card">
-  <div class="brand">🏉 Rugby Analytics</div>
+  <div class="brand">🏉 RUGBY ANALYTICS</div>
   <h2 id="login-title"></h2>
   <input id="login-email" type="email" autocomplete="username" placeholder="email@example.com">
   <input id="login-password" type="password" autocomplete="current-password" placeholder="••••••••">

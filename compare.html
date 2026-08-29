@@ -6,36 +6,39 @@
 <title>選手比較 — Rugby Analytics</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="team-logos.js"></script>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 :root { color-scheme: dark;
-  --page:#08080a; --surface:#14141a; --ink-1:#f3f4f6; --ink-2:#c9cdd6; --ink-muted:#a0aec0;
-  --grid:rgba(255,255,255,.08); --baseline:rgba(197,160,89,.34); --border:rgba(197,160,89,.28);
-  --gold:#c5a059; --red:#ff0b24; --deepred:#6e0007;
-  --a:#c5a059; --a-soft:#7a5f36; --b:#ff0b24; --b-soft:#6e0007; --radius:8px; --gap:14px; }
+  --page:#08080a; --surface:#14141a; --surface-2:#1b1b23; --ink-1:#f3f4f6; --ink-2:#c9cdd6; --ink-muted:#8b93a3;
+  --grid:rgba(255,255,255,.08); --baseline:rgba(197,160,89,.34); --border:rgba(197,160,89,.28); --border-strong:rgba(197,160,89,.5);
+  --gold:#c5a059; --gold-soft:#e7cd94; --red:#ff0b24; --deepred:#6e0007;
+  --a:#c5a059; --a-soft:#7a5f36; --b:#ff0b24; --b-soft:#6e0007; --radius:10px; --gap:14px; }
 body { font-family: Montserrat,system-ui,-apple-system,"Segoe UI","Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
   background:radial-gradient(1400px 700px at 12% -10%, rgba(197,160,89,.07), transparent 55%), radial-gradient(1200px 650px at 100% -5%, rgba(255,11,36,.05), transparent 55%), linear-gradient(180deg, #101014 0%, var(--page) 480px);
   color:var(--ink-1); line-height:1.5; }
 .topnav{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:18px;flex-wrap:wrap;
-  background:var(--surface);border-bottom:1px solid var(--border);padding:10px 18px;}
+  background:rgba(20,20,26,.86); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border);padding:10px 18px;}
+.topnav::after{content:'';position:absolute;left:0;right:0;top:100%;height:2px;
+  background:linear-gradient(90deg, transparent, var(--gold) 20%, var(--red) 55%, transparent 85%); opacity:.5;}
 .topnav .brand{font-weight:800;font-size:15px;color:var(--gold);text-decoration:none;white-space:nowrap;letter-spacing:.02em;}
 .topnav .navlinks{display:flex;gap:4px;flex-wrap:wrap;}
-.topnav .navlinks a{font-size:13px;color:var(--ink-2);text-decoration:none;padding:6px 12px;border-radius:6px;white-space:nowrap;font-weight:600;}
-.topnav .navlinks a:hover{background:rgba(255,255,255,.06);}
-.topnav .navlinks a.active{background:var(--red);color:#fff;}
+.topnav .navlinks a{font-size:13px;color:var(--ink-2);text-decoration:none;padding:6px 12px;border-radius:6px;white-space:nowrap;font-weight:600;transition:background .12s,color .12s;}
+.topnav .navlinks a:hover{background:rgba(255,255,255,.07);color:var(--ink-1);}
+.topnav .navlinks a.active{background:linear-gradient(135deg, var(--red), var(--deepred));color:#fff;box-shadow:0 4px 14px rgba(255,11,36,.28);}
 .topnav .spacer{flex:1;}
 #lang-toggle{font-size:12px;font-weight:700;color:var(--gold);background:var(--page);border:1px solid var(--border);
-  border-radius:6px;padding:5px 11px;cursor:pointer;white-space:nowrap;}
-#lang-toggle:hover{background:rgba(255,255,255,.06);}
+  border-radius:6px;padding:5px 11px;cursor:pointer;white-space:nowrap;transition:background .12s,border-color .12s;}
+#lang-toggle:hover{background:rgba(255,255,255,.06);border-color:var(--border-strong);}
 #logout-btn{font-size:12px;font-weight:700;color:var(--gold);background:var(--page);border:1px solid var(--border);
-  border-radius:6px;padding:5px 11px;cursor:pointer;white-space:nowrap;}
-#logout-btn:hover{background:rgba(255,255,255,.06);}
+  border-radius:6px;padding:5px 11px;cursor:pointer;white-space:nowrap;transition:background .12s,border-color .12s;}
+#logout-btn:hover{background:rgba(255,255,255,.06);border-color:var(--border-strong);}
 .wrap { max-width:1100px; margin:0 auto; padding:18px var(--gap) 32px; }
-header h1 { font-size:20px; font-weight:800; letter-spacing:.01em; }
-header .sub { font-size:12.5px; color:var(--ink-2); margin-top:2px; }
+header h1 { font-family:"Bebas Neue",Montserrat,sans-serif; font-weight:400; font-size:30px; letter-spacing:.03em; color:var(--gold-soft); }
+header .sub { font-size:12.5px; color:var(--ink-2); margin-top:3px; }
 .filters { display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin:16px 0 6px; }
 .fg { display:flex; align-items:center; gap:6px; }
 .fg label { font-size:11px; color:var(--gold); font-weight:700; text-transform:uppercase; letter-spacing:.05em; }
@@ -43,21 +46,23 @@ header .sub { font-size:12.5px; color:var(--ink-2); margin-top:2px; }
   background:var(--page); border:1px solid #3a3a42; border-radius:6px; }
 .picker { display:grid; grid-template-columns:1fr 1fr; gap:var(--gap); margin:14px 0; }
 .pt-box { min-width:0; }
-.picker .side { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px 16px; min-width:0; }
+.picker .side { background:linear-gradient(180deg, var(--surface-2), var(--surface)); border:1px solid var(--border); border-radius:var(--radius);
+  padding:14px 16px; min-width:0; }
 .picker .side.a { border-top:3px solid var(--a); }
 .picker .side.b { border-top:3px solid var(--b); }
 .picker .side .name { font-size:16px; font-weight:700; margin-top:6px; }
 .picker .side .pos { font-size:12px; color:var(--ink-muted); }
 .picker .fg { margin-bottom:6px; }
 .picker .fg select { width:100%; max-width:none; }
-.card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px 18px; margin-bottom:var(--gap); min-width:0; }
+.card { background:linear-gradient(180deg, var(--surface-2), var(--surface)); border:1px solid var(--border); border-radius:var(--radius);
+  padding:16px 18px; margin-bottom:var(--gap); min-width:0; }
 .card h3 { font-size:14px; font-weight:700; margin-bottom:2px; }
 .card .desc { font-size:12px; color:var(--ink-muted); margin-bottom:10px; }
 .section-h { font-size:12px; font-weight:700; color:var(--gold); text-transform:uppercase; letter-spacing:.03em;
   margin:18px 0 6px; border-left:3px solid var(--red); padding-left:9px; }
 .row { display:grid; grid-template-columns:1fr 2fr 1fr; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--grid); }
 .row:last-child { border-bottom:none; }
-.row .val { font-size:15px; font-weight:700; font-variant-numeric:tabular-nums; }
+.row .val { font-family:"Bebas Neue",Montserrat,sans-serif; font-weight:400; font-size:19px; letter-spacing:.02em; font-variant-numeric:tabular-nums; }
 .row .val.a { text-align:right; color:var(--a); }
 .row .val.b { text-align:left; color:var(--b); }
 .row .note { font-size:11px; font-weight:400; color:var(--ink-muted); }
