@@ -133,6 +133,12 @@ function calcAge(iso){
   if (m < 0 || (m===0 && now.getDate() < d.getDate())) age--;
   return age;
 }
+function fmtDob(iso){
+  if(!iso) return null;
+  const [y,m,d] = iso.split('-').map(Number);
+  return LANG === 'ja' ? `${y}年${m}月${d}日生まれ`
+    : new Date(Date.UTC(y,m-1,d)).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric',timeZone:'UTC'});
+}
 
 const UI = {
   ja:{ nav_home:'ホーム', nav_kick:'キック', nav_attack:'アタック', nav_defense:'ディフェンス', nav_lineout:'ラインアウト', nav_scrum:'スクラム', nav_game:'試合サマリー', nav_compare:'選手比較', nav_player:'個人スタッツ', nav_recruit:'大学生比較',
@@ -296,7 +302,7 @@ function render() {
       <div class="card-header">
         <h2>${name}</h2>
         <span class="pos">${position}</span>
-        ${age != null ? `<span class="age">${age}${LANG === 'ja' ? '歳' : ' yrs'}</span>` : ''}
+        ${age != null ? `<span class="age">${fmtDob(DOB[name])} (${age}${LANG === 'ja' ? '歳' : ' yrs'})</span>` : ''}
         <span class="comp">${compName}</span>
         <span class="gp">${gp} ${LANG === 'ja' ? '試合' : 'matches'}</span>
       </div>
