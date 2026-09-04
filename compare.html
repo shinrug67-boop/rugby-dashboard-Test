@@ -103,13 +103,14 @@ footer { margin-top:16px; font-size:12px; color:var(--ink-muted); }
     <a href="scrum.html" data-nav="scrum" id="nav-scrum">スクラム</a>
     <a href="game.html" data-nav="game" id="nav-game">試合サマリー</a>
     <a href="compare.html" data-nav="compare" id="nav-compare">選手比較</a>
+    <a href="player.html" data-nav="player" id="nav-player" style="display:none">個人スタッツ</a>
     <a href="recruit.html" data-nav="recruit" id="nav-recruit" style="display:none">大学生比較</a>
   </div>
   <span class="spacer"></span>
   <button id="logout-btn" type="button"></button>
   <button id="lang-toggle" type="button">EN</button>
 </nav>
-<script>(function(){if(document.cookie.split('; ').some(function(c){return c.trim()==='role=management';})){var el=document.getElementById('nav-recruit');if(el)el.style.display='';}})();</script>
+<script>(function(){if(document.cookie.split('; ').some(function(c){return c.trim()==='role=management';})){['nav-player','nav-recruit'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='';});}})();</script>
 <div class="wrap">
   <header><h1 id="page-title"></h1><div class="sub" id="page-sub"></div></header>
 
@@ -148,7 +149,7 @@ const HO_POS = new Set(['Hooker']);
 const LO_POS = new Set(['Lock (4)','Lock (5)','Openside Flanker','Blindside Flanker','Number 8']);
 
 const UI = {
-  ja:{ nav_home:'ホーム', nav_kick:'キック', nav_attack:'アタック', nav_defense:'ディフェンス', nav_lineout:'ラインアウト', nav_scrum:'スクラム', nav_game:'試合サマリー', nav_compare:'選手比較', nav_recruit:'大学生比較',
+  ja:{ nav_home:'ホーム', nav_kick:'キック', nav_attack:'アタック', nav_defense:'ディフェンス', nav_lineout:'ラインアウト', nav_scrum:'スクラム', nav_game:'試合サマリー', nav_compare:'選手比較', nav_player:'個人スタッツ', nav_recruit:'大学生比較',
     logout_btn:'ログアウト', lang_btn:'EN',
     doctitle:'選手比較 — Rugby Analytics',
     page_title:'選手比較', page_sub:'2選手のスタッツを合計・1試合平均で比較(データ: Opta Stats Perform)',
@@ -173,7 +174,7 @@ const UI = {
     note_total:(tot)=>`合計 ${tot}`,
     note_pct:(n,d)=>`${n} / ${d}`,
     foot:'定義: キャリーゲインm=Distance+ / ポストコンタクトm=Metres3合計 / DF Beaten=Attacking Qualities×Defender Beaten / オフロード=Pass×Offload(結果Own Player/To Ground/To Opposition)、成功=Own Player / タックル成功率=(成功各種+Offload Allowed/Pen Conceded)÷タックル(Missed/Ineffective除外) / ジャッカル=Collection×Jackal、成功=Success / OOA=Ruck OOAのqualifier4(Attacking/Defensive OOA) / キックメーター=Kick in Play区間のDistance+合計 / ラインアウトスロー成功率=投げ手個人のWon÷総投球(HOのみ表示) / ラインアウト成功率(捕球)=捕球者個人の自チーム投球Won÷総捕球、DFスティール=Lineout TakeのSteal系(LOのみ表示) / アタックスクラム成功率=Offensive Scrum(action=28)個人参加行のうちWon Outright/Won Free Kick/Won Penalty/Won Penalty Try/Won Try÷総参加数 / ディフェンススクラムPressure%=Defensive Scrum(action=29)個人参加行のうちLost Outright/Lost Free Kick/Lost Pen Con/Lost Reversed÷総参加数 / ディフェンススクラム成功率=Pressure%の分子にWon Outrightを加えたもの(反則を与えなければ成功)。ポジションはその選手の生涯最頻出ポジションで判定。データ: Opta(Stats Perform, Level 2 Restricted)。' },
-  en:{ nav_home:'Home', nav_kick:'Kicking', nav_attack:'Attack', nav_defense:'Defense', nav_lineout:'Lineout', nav_scrum:'Scrum', nav_game:'Game Summary', nav_compare:'Player Compare', nav_recruit:'University Compare',
+  en:{ nav_home:'Home', nav_kick:'Kicking', nav_attack:'Attack', nav_defense:'Defense', nav_lineout:'Lineout', nav_scrum:'Scrum', nav_game:'Game Summary', nav_compare:'Player Compare', nav_player:'Player Stats', nav_recruit:'University Compare',
     logout_btn:'Sign out', lang_btn:'日本語',
     doctitle:'Player Comparison — Rugby Analytics',
     page_title:'Player Comparison', page_sub:'Compare two players\' stats as totals and per-match averages (Data: Opta Stats Perform)',
@@ -435,7 +436,8 @@ function setStaticChrome(){
   document.getElementById('nav-scrum').textContent = U().nav_scrum;
   document.getElementById('nav-game').textContent = U().nav_game;
   document.getElementById('nav-compare').textContent = U().nav_compare;
-  const navRecruit=document.getElementById('nav-recruit'); if(navRecruit) navRecruit.textContent=U().nav_recruit;
+  const navPlayer=document.getElementById('nav-player'); if(navPlayer) navPlayer.textContent = U().nav_player;
+const navRecruit=document.getElementById('nav-recruit'); if(navRecruit) navRecruit.textContent=U().nav_recruit;
   document.getElementById('lbl-comp').textContent = U().f_comp;
   document.getElementById('lbl-season').textContent = U().f_season;
   document.querySelector('#f-comp option[value="all"]').textContent = U().all_comp;

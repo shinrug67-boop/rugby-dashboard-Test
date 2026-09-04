@@ -128,13 +128,14 @@ footer { margin-top:16px; font-size:12px; color:var(--ink-muted); }
     <a href="scrum.html" id="nav-scrum">スクラム</a>
     <a href="game.html" id="nav-game">試合サマリー</a>
     <a href="compare.html" id="nav-compare">選手比較</a>
+    <a href="player.html" id="nav-player" style="display:none">個人スタッツ</a>
     <a href="recruit.html" id="nav-recruit" style="display:none">大学生比較</a>
   </div>
   <span class="spacer"></span>
   <button id="logout-btn" type="button"></button>
   <button id="lang-toggle" type="button">EN</button>
 </nav>
-<script>(function(){if(document.cookie.split('; ').some(function(c){return c.trim()==='role=management';})){var el=document.getElementById('nav-recruit');if(el)el.style.display='';}})();</script>
+<script>(function(){if(document.cookie.split('; ').some(function(c){return c.trim()==='role=management';})){['nav-player','nav-recruit'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='';});}})();</script>
 <div class="wrap">
   <header>
     <h1 id="page-title">コンテストキック ダッシュボード — 全コンペティション</h1>
@@ -255,7 +256,7 @@ const UI = {
   ja:{ doctitle:'コンテストキック ダッシュボード — 全コンペティション',
     page_title:'コンテストキック ダッシュボード — 全コンペティション',
     page_sub:'11コンペティション・1,915試合・33,821本(2023〜2027シーズン) | 定義: Kick × Kick in Play / Kick in Play (Own 22) × Box / Bomb | 結果分類は Stats Perform BI Event Data 2.0.0 Table 31 準拠',
-    nav_home:'ホーム', nav_kick:'キック', nav_attack:'アタック', nav_defense:'ディフェンス', nav_lineout:'ラインアウト', nav_scrum:'スクラム', nav_game:'試合サマリー', nav_compare:'選手比較', nav_recruit:'大学生比較',
+    nav_home:'ホーム', nav_kick:'キック', nav_attack:'アタック', nav_defense:'ディフェンス', nav_lineout:'ラインアウト', nav_scrum:'スクラム', nav_game:'試合サマリー', nav_compare:'選手比較', nav_player:'個人スタッツ', nav_recruit:'大学生比較',
     logout_btn:'ログアウト',
     f_comp:'コンペティション', f_season:'シーズン', f_round:'ラウンド', f_team:'チーム', f_type:'キック種類',
     all_comp:'全コンペ', all_season:'全シーズン', all_round:'全節', all_team:'全チーム',
@@ -288,7 +289,7 @@ const UI = {
   en:{ doctitle:'Contestable Kick Dashboard — All Competitions',
     page_title:'Contestable Kick Dashboard — All Competitions',
     page_sub:'11 competitions · 1,915 matches · 33,821 kicks (2023–2027 seasons) | Definition: Kick × (Kick in Play / Kick in Play (Own 22)) × (Box / Bomb) | Outcome categories per Stats Perform BI Event Data 2.0.0 Table 31',
-    nav_home:'Home', nav_kick:'Kicking', nav_attack:'Attack', nav_defense:'Defense', nav_lineout:'Lineout', nav_scrum:'Scrum', nav_game:'Game Summary', nav_compare:'Player Compare', nav_recruit:'University Compare',
+    nav_home:'Home', nav_kick:'Kicking', nav_attack:'Attack', nav_defense:'Defense', nav_lineout:'Lineout', nav_scrum:'Scrum', nav_game:'Game Summary', nav_compare:'Player Compare', nav_player:'Player Stats', nav_recruit:'University Compare',
     logout_btn:'Sign out',
     f_comp:'Competition', f_season:'Season', f_round:'Round', f_team:'Team', f_type:'Kick type',
     all_comp:'All competitions', all_season:'All seasons', all_round:'All rounds', all_team:'All teams',
@@ -1027,7 +1028,8 @@ function setStaticChrome(){
   document.getElementById('nav-scrum').textContent = U().nav_scrum;
   document.getElementById('nav-game').textContent = U().nav_game;
   document.getElementById('nav-compare').textContent = U().nav_compare;
-  const navRecruit=document.getElementById('nav-recruit'); if(navRecruit) navRecruit.textContent = U().nav_recruit;
+  const navPlayer=document.getElementById('nav-player'); if(navPlayer) navPlayer.textContent = U().nav_player;
+const navRecruit=document.getElementById('nav-recruit'); if(navRecruit) navRecruit.textContent = U().nav_recruit;
   document.getElementById('lbl-comp').textContent = U().f_comp;
   document.getElementById('lbl-season').textContent = U().f_season;
   document.getElementById('lbl-round').textContent = U().f_round;

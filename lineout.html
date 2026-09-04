@@ -105,13 +105,14 @@ footer { margin-top:16px; font-size:12px; color:var(--ink-muted); }
     <a href="scrum.html" data-nav="scrum" id="nav-scrum">スクラム</a>
     <a href="game.html" data-nav="game" id="nav-game">試合サマリー</a>
     <a href="compare.html" data-nav="compare" id="nav-compare">選手比較</a>
+    <a href="player.html" data-nav="player" id="nav-player" style="display:none">個人スタッツ</a>
     <a href="recruit.html" data-nav="recruit" id="nav-recruit" style="display:none">大学生比較</a>
   </div>
   <span class="spacer"></span>
   <button id="logout-btn" type="button"></button>
   <button id="lang-toggle" type="button">EN</button>
 </nav>
-<script>(function(){if(document.cookie.split('; ').some(function(c){return c.trim()==='role=management';})){var el=document.getElementById('nav-recruit');if(el)el.style.display='';}})();</script>
+<script>(function(){if(document.cookie.split('; ').some(function(c){return c.trim()==='role=management';})){['nav-player','nav-recruit'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='';});}})();</script>
 <div class="wrap">
   <header><h1 id="page-title"></h1><div class="sub" id="page-sub"></div></header>
   <div class="filters">
@@ -194,7 +195,7 @@ const CFG_EN = {
     row:(name,team,c,gp)=>({name,team,gp,__min:c.lo_throw_total,throwWon:c.lo_throw_won,throwTotal:c.lo_throw_total,throw:gp?c.lo_throw_total/gp:0,throwPct:c.lo_throw_total?c.lo_throw_won/c.lo_throw_total*100:0}) }
 };
 const UI = {
-  ja:{ nav_home:'ホーム', nav_kick:'キック', nav_attack:'アタック', nav_defense:'ディフェンス', nav_lineout:'ラインアウト', nav_scrum:'スクラム', nav_game:'試合サマリー', nav_compare:'選手比較', nav_recruit:'大学生比較',
+  ja:{ nav_home:'ホーム', nav_kick:'キック', nav_attack:'アタック', nav_defense:'ディフェンス', nav_lineout:'ラインアウト', nav_scrum:'スクラム', nav_game:'試合サマリー', nav_compare:'選手比較', nav_player:'個人スタッツ', nav_recruit:'大学生比較',
     f_comp:'コンペティション', f_season:'シーズン', f_round:'ラウンド', f_team:'チーム', f_metric:'チャート指標',
     all_comp:'全コンペ', all_season:'全シーズン', all_round:'全節', all_team:'全チーム',
     n_selected:(n)=>`${n}件選択中`,
@@ -204,7 +205,7 @@ const UI = {
     logout_btn:'ログアウト',
     rank_desc:(capped,cap,minGames,hasDenom)=>(capped?`上位${cap}チーム。`:'')+`${minGames}試合以上。`+(hasDenom?'標本の少ないチームは除外。':'')+'ホバーで内訳',
     player_desc:(min,eligible,capped,cap,minLabel)=>`${minLabel||'出場'}${min}以上の選手${eligible.toLocaleString()}人中`+(capped?`、現ソート上位${cap}人。`:`全員。`)+' 数量は1試合平均・ラウンドフィルタ適用外' },
-  en:{ nav_home:'Home', nav_kick:'Kicking', nav_attack:'Attack', nav_defense:'Defense', nav_lineout:'Lineout', nav_scrum:'Scrum', nav_game:'Game Summary', nav_compare:'Player Compare', nav_recruit:'University Compare',
+  en:{ nav_home:'Home', nav_kick:'Kicking', nav_attack:'Attack', nav_defense:'Defense', nav_lineout:'Lineout', nav_scrum:'Scrum', nav_game:'Game Summary', nav_compare:'Player Compare', nav_player:'Player Stats', nav_recruit:'University Compare',
     f_comp:'Competition', f_season:'Season', f_round:'Round', f_team:'Team', f_metric:'Chart metric',
     all_comp:'All competitions', all_season:'All seasons', all_round:'All rounds', all_team:'All teams',
     n_selected:(n)=>`${n} selected`,
@@ -359,7 +360,8 @@ function setStaticChrome(){
   document.getElementById('nav-scrum').textContent=U().nav_scrum;
   document.getElementById('nav-game').textContent=U().nav_game;
   document.getElementById('nav-compare').textContent=U().nav_compare;
-  const navRecruit=document.getElementById('nav-recruit'); if(navRecruit) navRecruit.textContent=U().nav_recruit;
+  const navPlayer=document.getElementById('nav-player'); if(navPlayer) navPlayer.textContent = U().nav_player;
+const navRecruit=document.getElementById('nav-recruit'); if(navRecruit) navRecruit.textContent=U().nav_recruit;
   document.getElementById('lbl-comp').textContent=U().f_comp;
   document.getElementById('lbl-season').textContent=U().f_season;
   document.getElementById('lbl-round').textContent=U().f_round;

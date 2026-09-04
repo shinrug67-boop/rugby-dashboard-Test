@@ -90,13 +90,14 @@ footer { margin-top:16px; font-size:12px; color:var(--ink-muted); }
     <a href="scrum.html" id="nav-scrum">スクラム</a>
     <a href="game.html" class="active" id="nav-game">試合サマリー</a>
     <a href="compare.html" id="nav-compare">選手比較</a>
+    <a href="player.html" id="nav-player" style="display:none">個人スタッツ</a>
     <a href="recruit.html" id="nav-recruit" style="display:none">大学生比較</a>
   </div>
   <span class="spacer"></span>
   <button id="logout-btn" type="button"></button>
   <button id="lang-toggle" type="button">EN</button>
 </nav>
-<script>(function(){if(document.cookie.split('; ').some(function(c){return c.trim()==='role=management';})){var el=document.getElementById('nav-recruit');if(el)el.style.display='';}})();</script>
+<script>(function(){if(document.cookie.split('; ').some(function(c){return c.trim()==='role=management';})){['nav-player','nav-recruit'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='';});}})();</script>
 <div class="wrap">
   <header><h1 id="page-title"></h1><div class="sub" id="page-sub"></div></header>
   <div class="filters">
@@ -114,7 +115,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_WUHxP4DDM9FRN4JfduqDNA_-S3lCM2p';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const UI = {
-  ja:{ nav_home:'ホーム', nav_kick:'キック', nav_attack:'アタック', nav_defense:'ディフェンス', nav_lineout:'ラインアウト', nav_scrum:'スクラム', nav_game:'試合サマリー', nav_compare:'選手比較', nav_recruit:'大学生比較',
+  ja:{ nav_home:'ホーム', nav_kick:'キック', nav_attack:'アタック', nav_defense:'ディフェンス', nav_lineout:'ラインアウト', nav_scrum:'スクラム', nav_game:'試合サマリー', nav_compare:'選手比較', nav_player:'個人スタッツ', nav_recruit:'大学生比較',
     title:'試合サマリー', sub:'試合を選ぶと、前半/後半別のチーム比較・選手ロースター・タックル成否を表示します | データ: Opta (Stats Perform)',
     f_season:'シーズン', f_comp:'コンペティション', f_round:'ラウンド', f_fixture:'試合',
     empty:'該当する試合がありません', loading:'読み込み中...', vs:'vs', half1:'前半', half2:'後半', total:'合計',
@@ -128,7 +129,7 @@ const UI = {
     tackle_title:'タックル成否(選手別)', tk_succ:'成功', tk_miss:'ミス', lang_btn:'EN',
     logout_btn:'ログアウト',
     foot:'指標定義: LQB%=Ruck 0–3秒÷総ラック / DF Beaten=Attacking Qualities×Defender Beaten / Linebreak=Initial+Supported Break / Offload=Pass×Offload(Own Player/To Ground/To Opposition) / 22mトライ率=22mエントリーのうちトライで終わった割合 / KIP獲得m=Kick in Play(Own 22含む)のDistance+合計 / タックル成功率=Missed/Ineffectiveを除く / Scrum%=Won系÷自ボールスクラム / Lineout%=Won系÷自スロー(フォーメーション投入)。前半/後半は延長戦を後半に含める。データ: Opta(Stats Perform, Level 2 Restricted)。このページはログインしたチームメンバーのみ閲覧できます。' },
-  en:{ nav_home:'Home', nav_kick:'Kicking', nav_attack:'Attack', nav_defense:'Defense', nav_lineout:'Lineout', nav_scrum:'Scrum', nav_game:'Game Summary', nav_compare:'Player Compare', nav_recruit:'University Compare',
+  en:{ nav_home:'Home', nav_kick:'Kicking', nav_attack:'Attack', nav_defense:'Defense', nav_lineout:'Lineout', nav_scrum:'Scrum', nav_game:'Game Summary', nav_compare:'Player Compare', nav_player:'Player Stats', nav_recruit:'University Compare',
     title:'Game Summary', sub:'Pick a fixture to see the 1st/2nd-half team comparison, player roster, and tackle outcomes | Data: Opta (Stats Perform)',
     f_season:'Season', f_comp:'Competition', f_round:'Round', f_fixture:'Fixture',
     empty:'No matching fixtures', loading:'Loading...', vs:'vs', half1:'1st', half2:'2nd', total:'Total',
@@ -362,7 +363,8 @@ function setStaticChrome(){
   document.getElementById('nav-scrum').textContent=U().nav_scrum;
   document.getElementById('nav-game').textContent=U().nav_game;
   document.getElementById('nav-compare').textContent=U().nav_compare;
-  const navRecruit=document.getElementById('nav-recruit'); if(navRecruit) navRecruit.textContent=U().nav_recruit;
+  const navPlayer=document.getElementById('nav-player'); if(navPlayer) navPlayer.textContent = U().nav_player;
+const navRecruit=document.getElementById('nav-recruit'); if(navRecruit) navRecruit.textContent=U().nav_recruit;
   document.getElementById('lbl-season').textContent=U().f_season;
   document.getElementById('lbl-comp').textContent=U().f_comp;
   document.getElementById('lbl-round').textContent=U().f_round;
