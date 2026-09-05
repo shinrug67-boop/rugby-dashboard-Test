@@ -42,6 +42,18 @@ header .sub { font-size:12.5px; color:var(--ink-2); margin-top:3px; }
 .fg label { font-size:11px; color:var(--gold); font-weight:700; text-transform:uppercase; letter-spacing:.05em; }
 .fg select { padding:6px 10px; font-size:14px; color:var(--ink-1); max-width:280px;
   background:var(--page); border:1px solid #3a3a42; border-radius:6px; }
+.player-combo { position:relative; }
+.player-combo input { padding:6px 10px; font-size:14px; color:var(--ink-1); width:260px; max-width:55vw;
+  background:var(--page); border:1px solid #3a3a42; border-radius:6px; font-family:inherit; }
+.player-combo input:focus { outline:none; border-color:var(--gold); }
+.player-dropdown { position:absolute; top:calc(100% + 4px); left:0; min-width:100%; max-height:320px; overflow-y:auto;
+  background:var(--surface); border:1px solid var(--border); border-radius:8px; z-index:50;
+  box-shadow:0 10px 28px rgba(0,0,0,.5); }
+.player-dropdown .opt { padding:7px 12px; font-size:13.5px; color:var(--ink-1); cursor:pointer; white-space:nowrap; }
+.player-dropdown .opt mark { background:none; color:var(--gold); font-weight:700; }
+.player-dropdown .opt:hover, .player-dropdown .opt.hi { background:var(--gold); color:#1a1408; }
+.player-dropdown .opt:hover mark, .player-dropdown .opt.hi mark { color:#1a1408; }
+.player-dropdown .empty { padding:7px 12px; font-size:13px; color:var(--ink-muted); }
 .card { background:linear-gradient(180deg, var(--surface-2), var(--surface)); border:1px solid var(--border); border-radius:var(--radius); padding:18px 20px; margin-top:14px; }
 .card-header { display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; margin-bottom:6px; border-bottom:1px solid var(--grid); padding-bottom:12px; }
 .card-header h2 { font-family:"Bebas Neue",Montserrat,sans-serif; font-weight:400; font-size:26px; letter-spacing:.02em; }
@@ -78,9 +90,10 @@ footer { margin-top:16px; font-size:12px; color:var(--ink-muted); }
 .scatter-wrap svg { width:100%; height:auto; }
 .scatter-axis-lbl { font-size:11px; fill:var(--ink-2); }
 .scatter-title-lbl { font-size:12px; fill:var(--gold); font-weight:700; }
-.scatter-dot { fill:var(--ink-muted); fill-opacity:.45; cursor:pointer; }
+.scatter-dot { fill:var(--ink-muted); fill-opacity:.45; cursor:default; }
 .scatter-dot:hover { fill-opacity:.85; }
-.scatter-dot.selected { fill:var(--gold); fill-opacity:1; stroke:var(--page); stroke-width:1.5; }
+.scatter-dot.clickable { cursor:pointer; }
+.scatter-dot.selected { fill:var(--gold); fill-opacity:1; stroke:var(--page); stroke-width:1.5; cursor:default; }
 .scatter-note { font-size:11px; color:var(--ink-muted); margin-top:8px; }
 .contrib-layout { display:grid; grid-template-columns:1fr 1fr; gap:28px; align-items:start; margin-top:16px; }
 @media (max-width:900px) { .contrib-layout{ grid-template-columns:1fr; } }
@@ -114,7 +127,14 @@ footer { margin-top:16px; font-size:12px; color:var(--ink-muted); }
   <header><h1 id="page-title"></h1><div class="sub" id="page-sub"></div></header>
 
   <div class="filters">
-    <div class="fg"><label id="lbl-player" for="f-player"></label><select id="f-player"></select></div>
+    <div class="fg">
+      <label id="lbl-player" for="f-player-search"></label>
+      <div class="player-combo">
+        <input type="text" id="f-player-search" autocomplete="off" spellcheck="false">
+        <div class="player-dropdown" id="f-player-dropdown" hidden></div>
+      </div>
+      <select id="f-player" style="display:none"></select>
+    </div>
     <div class="fg"><label id="lbl-comp" for="f-comp"></label><select id="f-comp"></select></div>
   </div>
 
@@ -161,6 +181,7 @@ const UI = {
     doctitle:'個人スタッツ — Rugby Analytics',
     page_title:'個人スタッツシート', page_sub:'同一コンペティション・同ポジション選手とのパーセンタイル比較(データ: Opta Stats Perform)',
     f_player:'選手', f_comp:'コンペティション',
+    player_search_placeholder:'選手名を検索…', player_search_empty:'該当する選手が見つかりません',
     empty:'選手を選択してください',
     legend_player:'選手', legend_median:'ポジション中央値(同コンペ内)',
     tt_value:'値', tt_pct:'パーセンタイル', tt_n:'母数',
@@ -175,6 +196,7 @@ const UI = {
     doctitle:'Player Stats — Rugby Analytics',
     page_title:'Individual Stat Sheet', page_sub:'Percentile comparison vs. same-position players in the same competition (Data: Opta Stats Perform)',
     f_player:'Player', f_comp:'Competition',
+    player_search_placeholder:'Search for a player…', player_search_empty:'No matching players',
     empty:'Select a player',
     legend_player:'Player', legend_median:'Position median (same competition)',
     tt_value:'Value', tt_pct:'Percentile', tt_n:'Peer group',
@@ -229,6 +251,8 @@ function skillsFromRow(row) {
 
 const MIN_SCATTER_MINUTES = 400;
 const CONTRIB_NAME_IDX = {}; CONTRIB.players.forEach((n, i) => CONTRIB_NAME_IDX[n] = i);
+const RATINGS_NAME_IDX = {}; RATINGS.players.forEach((n, i) => RATINGS_NAME_IDX[n] = i);
+const SORTED_PLAYER_IDX = RATINGS.players.map((_, i) => i).sort((a, b) => RATINGS.players[a].localeCompare(RATINGS.players[b]));
 const SCATTER_POS_ALL = 'ALL';
 const POSITIONS_LIST = [...new Set(CONTRIB.positions.filter(Boolean))].sort((a, b) => a.localeCompare(b));
 let currentScatterPos = SCATTER_POS_ALL;
@@ -282,14 +306,18 @@ function drawScatter(containerId, noteId, playerName, scopeName, posFilter) {
                            transform: `rotate(-90 12 ${M.t + plotH / 2})` }, svg);
   yt.textContent = U().axis_y;
 
-  // background dots
+  // background dots -- clicking one jumps the right-hand skill panel to that
+  // player (2026-09), if they have enough games to be rated at all
   bg.forEach(p => {
     const [idx, xv, yv, mins] = p;
-    const dot = el('circle', { cx: sx(xv), cy: sy(yv), r: 2.6, class: 'scatter-dot' }, svg);
-    dot.addEventListener('pointermove', e => showTip(e, CONTRIB.players[idx], [
+    const name = CONTRIB.players[idx];
+    const clickable = RATINGS_NAME_IDX[name] != null;
+    const dot = el('circle', { cx: sx(xv), cy: sy(yv), r: 2.6, class: 'scatter-dot' + (clickable ? ' clickable' : '') }, svg);
+    dot.addEventListener('pointermove', e => showTip(e, name, [
       [U().axis_x, xv.toFixed(2)], [U().axis_y, yv.toFixed(2)], [LANG === 'ja' ? '出場時間' : 'Minutes', Math.round(mins)]
     ]));
     dot.addEventListener('pointerleave', hideTip);
+    if (clickable) dot.addEventListener('click', () => { hideTip(); selectPlayerByName(name); });
   });
 
   // selected player, on top
@@ -375,6 +403,82 @@ function entriesForPlayer(playerIdx) {
 
 function renderEmpty() {
   document.getElementById('content').innerHTML = `<div class="card"><div class="empty-state">${U().empty}</div></div>`;
+}
+
+// ---- searchable player picker (2026-09) --------------------------------
+// The hidden <select id="f-player"> stays the source of truth other code
+// already reads (render/syncCompOptions); this just drives it from a
+// type-to-filter text box instead of a 3800-option native dropdown.
+const PLAYER_SEARCH_MAX_RESULTS = 40;
+let playerDropdownHi = -1;
+let playerDropdownItems = [];
+function playerSearchInput() { return document.getElementById('f-player-search'); }
+function playerDropdownEl() { return document.getElementById('f-player-dropdown'); }
+
+function highlightMatch(name, q) {
+  const frag = document.createDocumentFragment();
+  const i = q ? name.toLowerCase().indexOf(q) : -1;
+  if (i === -1) { frag.appendChild(document.createTextNode(name)); return frag; }
+  frag.appendChild(document.createTextNode(name.slice(0, i)));
+  const mark = document.createElement('mark'); mark.textContent = name.slice(i, i + q.length);
+  frag.appendChild(mark);
+  frag.appendChild(document.createTextNode(name.slice(i + q.length)));
+  return frag;
+}
+
+function renderPlayerDropdown(query) {
+  const dd = playerDropdownEl(); dd.replaceChildren();
+  const q = query.trim().toLowerCase();
+  const matches = SORTED_PLAYER_IDX.filter(i => !q || RATINGS.players[i].toLowerCase().includes(q))
+    .slice(0, PLAYER_SEARCH_MAX_RESULTS);
+  playerDropdownItems = matches;
+  playerDropdownHi = -1;
+  if (!matches.length) {
+    const empty = document.createElement('div'); empty.className = 'empty'; empty.textContent = U().player_search_empty;
+    dd.appendChild(empty);
+  } else {
+    matches.forEach(idx => {
+      const opt = document.createElement('div'); opt.className = 'opt';
+      opt.appendChild(highlightMatch(RATINGS.players[idx], q));
+      opt.addEventListener('mousedown', e => { e.preventDefault(); choosePlayerIdx(idx); });
+      dd.appendChild(opt);
+    });
+  }
+  dd.hidden = false;
+}
+function closePlayerDropdown() { playerDropdownEl().hidden = true; playerDropdownHi = -1; }
+function updatePlayerDropdownHi() {
+  const dd = playerDropdownEl();
+  [...dd.children].forEach((c, i) => c.classList.toggle('hi', i === playerDropdownHi));
+  const hi = dd.children[playerDropdownHi];
+  if (hi) hi.scrollIntoView({ block: 'nearest' });
+}
+
+// keepCompName: when set, tries to land on the same competition scope the
+// user was already looking at (used for scatter-dot jumps) instead of
+// resetting to Total.
+function choosePlayerIdx(idx, keepCompName) {
+  document.getElementById('f-player').value = String(idx);
+  playerSearchInput().value = RATINGS.players[idx];
+  closePlayerDropdown();
+  syncCompOptions();
+  if (keepCompName) {
+    const compSel = document.getElementById('f-comp');
+    const match = [...compSel.options].find(o => o.textContent === keepCompName);
+    if (match) compSel.value = match.value;
+  }
+  render();
+}
+
+// Jump the whole page to a player clicked on the contribution scatter.
+// Silently no-ops for players with no RATINGS entry (too few games to be
+// rated) since there'd be nothing to show on the skill side anyway.
+function selectPlayerByName(name) {
+  const idx = RATINGS_NAME_IDX[name];
+  if (idx == null) return;
+  const compSel = document.getElementById('f-comp');
+  const prevCompName = compSel.selectedIndex >= 0 ? compSel.options[compSel.selectedIndex].textContent : null;
+  choosePlayerIdx(idx, prevCompName);
 }
 
 function render() {
@@ -475,6 +579,7 @@ function setStaticChrome(){
   document.getElementById('page-title').textContent = U().page_title;
   document.getElementById('page-sub').textContent = U().page_sub;
   document.getElementById('lbl-player').textContent = U().f_player;
+  document.getElementById('f-player-search').placeholder = U().player_search_placeholder;
   document.getElementById('lbl-comp').textContent = U().f_comp;
   document.getElementById('lang-toggle').textContent = U().lang_btn;
   document.getElementById('logout-btn').textContent = U().logout_btn;
@@ -494,8 +599,8 @@ async function doLogout(){
   const nav = document.querySelector('.navlinks a[data-nav="player"]'); if(nav) nav.classList.add('active');
 
   const playerSel = document.getElementById('f-player');
-  const sortedIdx = RATINGS.players.map((_, i) => i).sort((a, b) => RATINGS.players[a].localeCompare(RATINGS.players[b]));
-  sortedIdx.forEach(i => { const o = document.createElement('option'); o.value = String(i); o.textContent = RATINGS.players[i]; playerSel.appendChild(o); });
+  SORTED_PLAYER_IDX.forEach(i => { const o = document.createElement('option'); o.value = String(i); o.textContent = RATINGS.players[i]; playerSel.appendChild(o); });
+  playerSearchInput().value = RATINGS.players[Number(playerSel.value)] || '';
 
   syncCompOptions();
   setStaticChrome();
@@ -506,8 +611,22 @@ async function doLogout(){
     setStaticChrome(); render();
   });
   document.getElementById('logout-btn').addEventListener('click', doLogout);
-  playerSel.addEventListener('change', () => { syncCompOptions(); render(); });
   document.getElementById('f-comp').addEventListener('change', render);
+
+  const searchInput = playerSearchInput();
+  searchInput.addEventListener('input', e => renderPlayerDropdown(e.target.value));
+  searchInput.addEventListener('focus', e => renderPlayerDropdown(e.target.value));
+  searchInput.addEventListener('keydown', e => {
+    if (playerDropdownEl().hidden) {
+      if (e.key === 'ArrowDown' || e.key === 'Enter') renderPlayerDropdown(searchInput.value);
+      return;
+    }
+    if (e.key === 'ArrowDown') { e.preventDefault(); playerDropdownHi = Math.min(playerDropdownHi + 1, playerDropdownItems.length - 1); updatePlayerDropdownHi(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); playerDropdownHi = Math.max(playerDropdownHi - 1, 0); updatePlayerDropdownHi(); }
+    else if (e.key === 'Enter') { e.preventDefault(); if (playerDropdownItems[playerDropdownHi] != null) choosePlayerIdx(playerDropdownItems[playerDropdownHi]); }
+    else if (e.key === 'Escape') { closePlayerDropdown(); searchInput.blur(); }
+  });
+  document.addEventListener('click', e => { if (!e.target.closest('.player-combo')) closePlayerDropdown(); });
 })();
 </script>
 </body>
