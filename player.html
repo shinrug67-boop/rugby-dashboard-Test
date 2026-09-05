@@ -130,8 +130,9 @@ footer { margin-top:16px; font-size:12px; color:var(--ink-muted); }
     <div class="fg">
       <label id="lbl-player" for="f-player-search"></label>
       <div class="player-combo">
-        <input type="text" id="f-player-search" autocomplete="off" spellcheck="false">
-        <div class="player-dropdown" id="f-player-dropdown" hidden></div>
+        <input type="text" id="f-player-search" autocomplete="off" spellcheck="false"
+               role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="false" aria-controls="f-player-dropdown">
+        <div class="player-dropdown" id="f-player-dropdown" role="listbox" hidden></div>
       </div>
       <select id="f-player" style="display:none"></select>
     </div>
@@ -182,6 +183,7 @@ const UI = {
     page_title:'個人スタッツシート', page_sub:'同一コンペティション・同ポジション選手とのパーセンタイル比較(データ: Opta Stats Perform)',
     f_player:'選手', f_comp:'コンペティション',
     player_search_placeholder:'選手名を検索…', player_search_empty:'該当する選手が見つかりません',
+    player_search_more:(n)=>`他${n}件(絞り込んでください)`, scatter_pos_label:'ポジションで絞り込み',
     empty:'選手を選択してください',
     legend_player:'選手', legend_median:'ポジション中央値(同コンペ内)',
     tt_value:'値', tt_pct:'パーセンタイル', tt_n:'母数',
@@ -197,6 +199,7 @@ const UI = {
     page_title:'Individual Stat Sheet', page_sub:'Percentile comparison vs. same-position players in the same competition (Data: Opta Stats Perform)',
     f_player:'Player', f_comp:'Competition',
     player_search_placeholder:'Search for a player…', player_search_empty:'No matching players',
+    player_search_more:(n)=>`+${n} more -- keep typing to narrow it down`, scatter_pos_label:'Filter by position',
     empty:'Select a player',
     legend_player:'Player', legend_median:'Position median (same competition)',
     tt_value:'Value', tt_pct:'Percentile', tt_n:'Peer group',
@@ -456,29 +459,48 @@ function highlightMatch(name, q) {
 function renderPlayerDropdown(query) {
   const dd = playerDropdownEl(); dd.replaceChildren();
   const q = query.trim().toLowerCase();
-  const matches = SORTED_PLAYER_IDX.filter(i => !q || RATINGS.players[i].toLowerCase().includes(q))
-    .slice(0, PLAYER_SEARCH_MAX_RESULTS);
+  const allMatches = SORTED_PLAYER_IDX.filter(i => !q || RATINGS.players[i].toLowerCase().includes(q));
+  const matches = allMatches.slice(0, PLAYER_SEARCH_MAX_RESULTS);
   playerDropdownItems = matches;
   playerDropdownHi = -1;
   if (!matches.length) {
     const empty = document.createElement('div'); empty.className = 'empty'; empty.textContent = U().player_search_empty;
     dd.appendChild(empty);
   } else {
-    matches.forEach(idx => {
-      const opt = document.createElement('div'); opt.className = 'opt';
+    matches.forEach((idx, row) => {
+      const opt = document.createElement('div'); opt.className = 'opt'; opt.id = 'player-opt-' + row;
+      opt.setAttribute('role', 'option');
       opt.appendChild(highlightMatch(RATINGS.players[idx], q));
       opt.addEventListener('mousedown', e => { e.preventDefault(); choosePlayerIdx(idx); });
       dd.appendChild(opt);
     });
+    // truncated at PLAYER_SEARCH_MAX_RESULTS -- say so rather than silently
+    // dropping matches (a common substring like "son" can hit 100+ names)
+    if (allMatches.length > matches.length) {
+      const more = document.createElement('div'); more.className = 'empty';
+      more.textContent = U().player_search_more(allMatches.length - matches.length);
+      dd.appendChild(more);
+    }
   }
   dd.hidden = false;
+  playerSearchInput().setAttribute('aria-expanded', 'true');
 }
-function closePlayerDropdown() { playerDropdownEl().hidden = true; playerDropdownHi = -1; }
+function closePlayerDropdown() {
+  playerDropdownEl().hidden = true;
+  playerDropdownHi = -1;
+  playerSearchInput().setAttribute('aria-expanded', 'false');
+  playerSearchInput().removeAttribute('aria-activedescendant');
+}
 function updatePlayerDropdownHi() {
   const dd = playerDropdownEl();
   [...dd.children].forEach((c, i) => c.classList.toggle('hi', i === playerDropdownHi));
   const hi = dd.children[playerDropdownHi];
-  if (hi) hi.scrollIntoView({ block: 'nearest' });
+  if (hi) {
+    hi.scrollIntoView({ block: 'nearest' });
+    playerSearchInput().setAttribute('aria-activedescendant', hi.id);
+  } else {
+    playerSearchInput().removeAttribute('aria-activedescendant');
+  }
 }
 
 // keepCompName: when set, tries to land on the same competition scope the
@@ -574,6 +596,7 @@ function render() {
   });
 
   const posSel = document.getElementById('scatter-pos-filter');
+  posSel.setAttribute('aria-label', U().scatter_pos_label);
   const posTotalOpt = document.createElement('option'); posTotalOpt.value = SCATTER_POS_ALL; posTotalOpt.textContent = 'Total';
   posSel.appendChild(posTotalOpt);
   POSITIONS_LIST.forEach(p => { const o = document.createElement('option'); o.value = p; o.textContent = p; posSel.appendChild(o); });
@@ -651,7 +674,14 @@ async function doLogout(){
     }
     if (e.key === 'ArrowDown') { e.preventDefault(); playerDropdownHi = Math.min(playerDropdownHi + 1, playerDropdownItems.length - 1); updatePlayerDropdownHi(); }
     else if (e.key === 'ArrowUp') { e.preventDefault(); playerDropdownHi = Math.max(playerDropdownHi - 1, 0); updatePlayerDropdownHi(); }
-    else if (e.key === 'Enter') { e.preventDefault(); if (playerDropdownItems[playerDropdownHi] != null) choosePlayerIdx(playerDropdownItems[playerDropdownHi]); }
+    else if (e.key === 'Enter') {
+      e.preventDefault();
+      // nothing arrow-key-highlighted yet -- if the filter narrowed to exactly
+      // one player, Enter should just pick them (matches how most search
+      // boxes behave; previously Enter did nothing until an arrow key ran)
+      const target = playerDropdownItems[playerDropdownHi] ?? (playerDropdownItems.length === 1 ? playerDropdownItems[0] : null);
+      if (target != null) choosePlayerIdx(target);
+    }
     else if (e.key === 'Escape') { closePlayerDropdown(); searchInput.blur(); }
   });
   document.addEventListener('click', e => { if (!e.target.closest('.player-combo')) closePlayerDropdown(); });
