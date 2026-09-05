@@ -34,7 +34,7 @@ body { font-family: Montserrat,system-ui,-apple-system,"Segoe UI","Hiragino Kaku
 #logout-btn{font-size:12px;font-weight:700;color:var(--gold);background:var(--page);border:1px solid var(--border);
   border-radius:6px;padding:5px 11px;cursor:pointer;white-space:nowrap;transition:background .12s,border-color .12s;}
 #logout-btn:hover{background:rgba(255,255,255,.06);border-color:var(--border-strong);}
-.wrap { max-width:1000px; margin:0 auto; padding:18px var(--gap) 32px; }
+.wrap { max-width:1320px; margin:0 auto; padding:18px var(--gap) 32px; }
 header h1 { font-family:"Bebas Neue",Montserrat,sans-serif; font-weight:400; font-size:30px; letter-spacing:.03em; color:var(--gold-soft); }
 header .sub { font-size:12.5px; color:var(--ink-2); margin-top:3px; }
 .filters { display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin:16px 0 6px; }
@@ -82,6 +82,9 @@ footer { margin-top:16px; font-size:12px; color:var(--ink-muted); }
 .scatter-dot:hover { fill-opacity:.85; }
 .scatter-dot.selected { fill:var(--gold); fill-opacity:1; stroke:var(--page); stroke-width:1.5; }
 .scatter-note { font-size:11px; color:var(--ink-muted); margin-top:8px; }
+.contrib-layout { display:grid; grid-template-columns:1fr 1fr; gap:28px; align-items:start; margin-top:16px; }
+@media (max-width:900px) { .contrib-layout{ grid-template-columns:1fr; } }
+.contrib-layout .col-h { font-size:12px; font-weight:700; color:var(--gold); text-transform:uppercase; letter-spacing:.04em; margin-bottom:8px; }
 </style>
 </head>
 <body>
@@ -161,6 +164,7 @@ const UI = {
     peer_note:(n)=>`同ポジション比較対象: ${n}人`,
     stars_na:'–',
     contrib_title:'チーム貢献度(RAPM)とプレー貢献(xP) -- 全選手中でのポジション。80分あたり換算、全コンペティション・全シーズン通算(ポジション/コンペで絞り込みたい場合は今後のアップデートで対応予定)。',
+    contrib_title_short:'チーム貢献度・プレー貢献', skill_title_short:'スキル評価(同ポジション比較)',
     axis_x:'xP (プレー貢献 / 80分)', axis_y:'RAPM (チーム貢献 / 80分)',
     scatter_min:(n)=>`80分あたり換算のため、出場${n}分未満の選手は背景の分布から除外(選択中の選手は出場時間に関わらず表示)`,
   },
@@ -175,6 +179,7 @@ const UI = {
     peer_note:(n)=>`Compared against ${n} same-position players`,
     stars_na:'–',
     contrib_title:'Team contribution (RAPM) and play contribution (xP) vs. every rated player. Per-80-minute rate, career-to-date across all competitions and seasons (position/competition filtering planned for a future update).',
+    contrib_title_short:'Team & Play Contribution', skill_title_short:'Skill Ratings (vs. same position)',
     axis_x:'xP (play contribution / 80 min)', axis_y:'RAPM (team contribution / 80 min)',
     scatter_min:(n)=>`Players under ${n} minutes are excluded from the background distribution (per-80 rates get noisy on tiny samples) -- the selected player is always shown regardless of minutes.`,
   }
@@ -386,15 +391,6 @@ function render() {
 
   const content = document.getElementById('content');
   content.innerHTML = `
-    <div class="card" id="contrib-card">
-      <div class="card-header">
-        <h2>${name}</h2>
-        ${age != null ? `<span class="age">${fmtDob(DOB[name])} (${age}${LANG === 'ja' ? '歳' : ' yrs'})</span>` : ''}
-      </div>
-      <div class="sub" style="margin-bottom:10px;">${U().contrib_title}</div>
-      <div class="scatter-wrap" id="scatter"></div>
-      <div class="scatter-note" id="scatter-note"></div>
-    </div>
     <div class="card">
       <div class="card-header">
         <h2>${name}</h2>
@@ -403,18 +399,28 @@ function render() {
         <span class="comp">${compName}</span>
         <span class="gp">${gp} ${LANG === 'ja' ? '試合' : 'matches'}</span>
       </div>
-      <div class="season-tabs" id="season-tabs"></div>
-      <div class="body-grid">
+      <div class="contrib-layout">
         <div>
-          <div class="legend">
-            <span><span class="sw" style="background:var(--gold)"></span>${U().legend_player}</span>
-            <span><span class="sw" style="background:var(--ink-muted); opacity:.6"></span>${U().legend_median}</span>
-          </div>
-          <div id="radar"></div>
+          <div class="col-h">${U().contrib_title_short}</div>
+          <div class="scatter-wrap" id="scatter"></div>
+          <div class="scatter-note" id="scatter-note"></div>
         </div>
-        <div class="stars-list" id="stars"></div>
+        <div>
+          <div class="col-h">${U().skill_title_short}</div>
+          <div class="season-tabs" id="season-tabs"></div>
+          <div class="body-grid">
+            <div>
+              <div class="legend">
+                <span><span class="sw" style="background:var(--gold)"></span>${U().legend_player}</span>
+                <span><span class="sw" style="background:var(--ink-muted); opacity:.6"></span>${U().legend_median}</span>
+              </div>
+              <div id="radar"></div>
+            </div>
+            <div class="stars-list" id="stars"></div>
+          </div>
+          <div class="peer-note">${U().peer_note(peerN)}</div>
+        </div>
       </div>
-      <div class="peer-note">${U().peer_note(peerN)}</div>
     </div>`;
 
   const tabBar = document.getElementById('season-tabs');
