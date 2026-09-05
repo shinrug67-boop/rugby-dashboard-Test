@@ -254,7 +254,20 @@ const CONTRIB_NAME_IDX = {}; CONTRIB.players.forEach((n, i) => CONTRIB_NAME_IDX[
 const RATINGS_NAME_IDX = {}; RATINGS.players.forEach((n, i) => RATINGS_NAME_IDX[n] = i);
 const SORTED_PLAYER_IDX = RATINGS.players.map((_, i) => i).sort((a, b) => RATINGS.players[a].localeCompare(RATINGS.players[b]));
 const SCATTER_POS_ALL = 'ALL';
-const POSITIONS_LIST = [...new Set(CONTRIB.positions.filter(Boolean))].sort((a, b) => a.localeCompare(b));
+// Collapses the 15 granular positions RATINGS/CONTRIB store down to the usual
+// 10 rugby position groups, just for the scatter's position filter (2026-09,
+// simplified per user request) -- everywhere else on the page (the position
+// pill in the card header, the skill peer pool) keeps using the granular
+// position, this grouping is purely a scatter-filter convenience.
+const POSITION_GROUPS = {
+  'Loosehead Prop': 'Prop', 'Tighthead Prop': 'Prop',
+  'Lock (4)': 'Lock', 'Lock (5)': 'Lock',
+  'Blindside Flanker': 'Flanker', 'Openside Flanker': 'Flanker',
+  'Inside Centre': 'Centre', 'Outside Centre': 'Centre',
+  'Left Wing': 'Wing', 'Right Wing': 'Wing',
+};
+function scatterPosGroup(pos) { return POSITION_GROUPS[pos] || pos; }
+const POSITIONS_LIST = [...new Set(CONTRIB.positions.filter(Boolean).map(scatterPosGroup))].sort((a, b) => a.localeCompare(b));
 let currentScatterPos = SCATTER_POS_ALL;
 
 function drawScatter(containerId, noteId, playerName, scopeName, posFilter) {
@@ -266,7 +279,7 @@ function drawScatter(containerId, noteId, playerName, scopeName, posFilter) {
   const selfIdx = CONTRIB_NAME_IDX[playerName];
   const selfPoint = selfIdx != null ? scopePts.find(p => p[0] === selfIdx) : undefined;
   let bg = scopePts.filter(p => p[3] >= MIN_SCATTER_MINUTES && p[0] !== selfIdx);
-  if (posFilter && posFilter !== SCATTER_POS_ALL) bg = bg.filter(p => CONTRIB.positions[p[0]] === posFilter);
+  if (posFilter && posFilter !== SCATTER_POS_ALL) bg = bg.filter(p => scatterPosGroup(CONTRIB.positions[p[0]]) === posFilter);
   noteEl.textContent = U().scatter_min(MIN_SCATTER_MINUTES);
   if (!bg.length && !selfPoint) { box.innerHTML = ''; return; }
 
