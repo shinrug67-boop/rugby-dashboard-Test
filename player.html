@@ -516,6 +516,10 @@ function choosePlayerIdx(idx, keepCompName) {
     const match = [...compSel.options].find(o => o.textContent === keepCompName);
     if (match) compSel.value = match.value;
   }
+  // A position filter left over from the previous player would silently keep
+  // the new player's scatter background thin (and easy to misread as "few
+  // peers exist") -- reset it on every player switch (2026-09, user-approved).
+  currentScatterPos = SCATTER_POS_ALL;
   render();
 }
 
