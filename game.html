@@ -53,6 +53,15 @@ header .sub { font-size:12.5px; color:var(--ink-2); margin-top:3px; }
   font-family:"Bebas Neue",Montserrat,sans-serif; font-weight:400; font-size:46px; letter-spacing:.02em; color:var(--gold);
   font-variant-numeric:tabular-nums; box-shadow:0 14px 30px -16px rgba(0,0,0,.55); }
 .vs { font-size:12px; color:var(--ink-muted); font-weight:700; }
+.splitbars { display:flex; flex-direction:column; gap:10px; max-width:560px; margin:0 auto var(--gap); }
+.splitbar-row { display:grid; grid-template-columns:34px 1fr 34px; align-items:center; gap:8px; }
+.splitbar-row .sb-pct { font-size:12px; font-weight:700; font-variant-numeric:tabular-nums; }
+.splitbar-row .sb-pct.home { color:var(--bar); text-align:right; }
+.splitbar-row .sb-pct.away { color:var(--ink-2); text-align:left; }
+.splitbar-track { display:flex; height:8px; border-radius:4px; overflow:hidden; background:var(--page); }
+.splitbar-track .sb-home { background:var(--bar); }
+.splitbar-track .sb-away { background:var(--ink-muted); opacity:.55; }
+.splitbar-lbl { font-size:11px; color:var(--ink-muted); text-transform:uppercase; letter-spacing:.03em; text-align:center; margin-bottom:-4px; }
 .card { background:linear-gradient(180deg, var(--surface-2), var(--surface)); border:1px solid var(--border); border-radius:var(--radius);
   padding:16px 18px; margin-bottom:var(--gap); min-width:0; }
 .card h3 { font-size:14px; font-weight:700; margin-bottom:10px; border-left:3px solid var(--red); padding-left:9px; }
@@ -124,7 +133,8 @@ const UI = {
       entry22_try_pct:'22mトライ率', pts_per_22:'22m侵入あたり得点', kip_mtr:'KIP獲得m', turnover_con:'被ターンオーバー',
       tackles:'タックル', tackle_pct:'タックル成功率', tk_missed:'ミスタックル', tk_pen_conceded:'タックル反則',
       scrum_pct:'スクラム成功率', lo_pct:'ラインアウト成功率' },
-    gainline:'ゲインライン率', roster_title:'選手ロースター', roster_p:'選手','roster_t':'出場(分)','roster_a':'Action/Min',
+    gainline:'ゲインライン率', possession:'ポゼッション', territory:'テリトリー',
+    roster_title:'選手ロースター', roster_p:'選手','roster_t':'出場(分)','roster_a':'Action/Min',
     roster_carries:'キャリー', roster_carrym:'キャリーm', roster_kicks:'キック', roster_kickm:'キックm',
     tackle_title:'タックル成否(選手別)', tk_succ:'成功', tk_miss:'ミス', lang_btn:'EN',
     logout_btn:'ログアウト',
@@ -138,7 +148,8 @@ const UI = {
       entry22_try_pct:'22m Try%', pts_per_22:'Point Per 22m', kip_mtr:'KIP mtr', turnover_con:'Turnover Con',
       tackles:'Tackle', tackle_pct:'Tackle%', tk_missed:'Miss Tackle', tk_pen_conceded:'DF Penalties',
       scrum_pct:'Scrum%', lo_pct:'Lineout%' },
-    gainline:'GainLine%', roster_title:'Player Roster', roster_p:'Player','roster_t':'Time','roster_a':'Action/Min',
+    gainline:'GainLine%', possession:'Possession', territory:'Territory',
+    roster_title:'Player Roster', roster_p:'Player','roster_t':'Time','roster_a':'Action/Min',
     roster_carries:'Carries', roster_carrym:'Carry m', roster_kicks:'Kicks', roster_kickm:'Kick m',
     tackle_title:'Tackle Attempts (by player)', tk_succ:'Success', tk_miss:'Miss', lang_btn:'日本語',
     logout_btn:'Sign out',
@@ -149,7 +160,7 @@ function U(){ return UI[LANG]; }
 const NS='http://www.w3.org/2000/svg';
 const TM = ['carries','carry_distplus','carry_post','gainline','def_beaten','linebreak','offload','entry22',
   'entry22_try','points','turnover_con','tackles','tk_succ','tk_missed','tk_pen_conceded','scrum','scrum_won',
-  'lo_total','lo_won','ruck','lqb','kip_mtr'];
+  'lo_total','lo_won','ruck','lqb','kip_mtr','poss_secs','terr_secs'];
 function el(tag,attrs,parent){ const e=document.createElementNS(NS,tag); for(const k in attrs)e.setAttribute(k,attrs[k]); if(parent)parent.appendChild(e); return e; }
 function cssColor(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
 
@@ -272,6 +283,26 @@ async function render(){
     <div class="side">${awayLogo?`<img src="${awayLogo}" alt="" style="height:32px">`:''}<div class="team">${away}</div><div class="gl">${U().gainline} ${awayGL.toFixed(0)}%</div></div>
     <div class="scorebox">${fx.ft_a}</div>`;
   content.appendChild(score);
+
+  // Possession / Territory (2026-09): computed server-side in
+  // build_game_data.py's compute_poss_terr from possession-chain durations
+  // (poss_secs) and ball-position-weighted time (terr_secs); this just turns
+  // the two teams' raw seconds into the split-percentage bar RugbyPass shows
+  // on its own match-stats pages.
+  const splitBarRow = (label, hSecs, aSecs) => {
+    const tot = hSecs + aSecs;
+    const hPct = tot ? hSecs / tot * 100 : 50, aPct = 100 - hPct;
+    return `<div class="splitbar-lbl">${label}</div>
+      <div class="splitbar-row">
+        <span class="sb-pct home">${hPct.toFixed(0)}%</span>
+        <div class="splitbar-track"><div class="sb-home" style="width:${hPct}%"></div><div class="sb-away" style="width:${aPct}%"></div></div>
+        <span class="sb-pct away">${aPct.toFixed(0)}%</span>
+      </div>`;
+  };
+  const splitbars = document.createElement('div'); splitbars.className = 'splitbars';
+  splitbars.innerHTML = splitBarRow(U().possession, homeM.total.poss_secs, awayM.total.poss_secs)
+    + splitBarRow(U().territory, homeM.total.terr_secs, awayM.total.terr_secs);
+  content.appendChild(splitbars);
 
   const cmpCard = document.createElement('div'); cmpCard.className='card';
   const cmpScroll = document.createElement('div'); cmpScroll.className='cmp-scroll';
