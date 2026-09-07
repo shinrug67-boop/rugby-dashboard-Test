@@ -62,7 +62,7 @@ header .sub { font-size:12.5px; color:var(--ink-2); margin-top:3px; }
 .splitbar-track .sb-home { background:var(--bar); }
 .splitbar-track .sb-away { background:var(--ink-muted); opacity:.55; }
 .splitbar-lbl { font-size:11px; color:var(--ink-muted); text-transform:uppercase; letter-spacing:.03em; text-align:center; margin-bottom:-4px; }
-.ball-in-play { text-align:center; font-size:11px; color:var(--ink-muted); padding:2px 0; }
+.ball-in-play { text-align:center; font-size:11px; color:var(--ink-muted); padding-bottom:10px; margin-bottom:10px; border-bottom:1px solid var(--border); }
 .ball-in-play b { color:var(--ink-2); font-variant-numeric:tabular-nums; font-weight:700; }
 .card { background:linear-gradient(180deg, var(--surface-2), var(--surface)); border:1px solid var(--border); border-radius:var(--radius);
   padding:16px 18px; margin-bottom:var(--gap); min-width:0; }
@@ -301,22 +301,24 @@ async function render(){
         <span class="sb-pct away">${aPct.toFixed(0)}%</span>
       </div>`;
   };
+  const splitbars = document.createElement('div'); splitbars.className = 'splitbars';
+  splitbars.innerHTML = splitBarRow(U().possession, homeM.total.poss_secs, awayM.total.poss_secs)
+    + splitBarRow(U().territory, homeM.total.terr_secs, awayM.total.terr_secs);
+  content.appendChild(splitbars);
+
   // "Ball in Play" (2026-09): the combined poss_secs of both teams IS the
   // total tracked ball-in-play time (each Possession-spell second is
-  // credited to exactly one team, never both/neither) -- shown once in the
-  // middle, matching Opta's own graphic (a single grey figure between the
-  // two teams' coloured stats, not a per-team split).
+  // credited to exactly one team, never both/neither). Shown once, inside
+  // the comparison card above the Carry row (2026-09 request), not split
+  // per team.
   const bipSecs = homeM.total.poss_secs + awayM.total.poss_secs;
   const bipMin = Math.floor(bipSecs / 60), bipSec = Math.round(bipSecs % 60);
   const bipStr = `${bipMin}:${String(bipSec).padStart(2, '0')}`;
 
-  const splitbars = document.createElement('div'); splitbars.className = 'splitbars';
-  splitbars.innerHTML = splitBarRow(U().possession, homeM.total.poss_secs, awayM.total.poss_secs)
-    + `<div class="ball-in-play">${U().ball_in_play}: <b>${bipStr}</b></div>`
-    + splitBarRow(U().territory, homeM.total.terr_secs, awayM.total.terr_secs);
-  content.appendChild(splitbars);
-
   const cmpCard = document.createElement('div'); cmpCard.className='card';
+  const bip = document.createElement('div'); bip.className = 'ball-in-play';
+  bip.innerHTML = `${U().ball_in_play}: <b>${bipStr}</b>`;
+  cmpCard.appendChild(bip);
   const cmpScroll = document.createElement('div'); cmpScroll.className='cmp-scroll';
   const tbl = document.createElement('table'); tbl.className='cmp';
   const thead = document.createElement('thead');
