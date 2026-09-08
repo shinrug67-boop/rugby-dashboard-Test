@@ -160,7 +160,19 @@ function el(tag, attrs, parent) {
 const TOTAL_KEY = 'Total';
 const SKILL_LABEL = { carry:'Carry', handling:'Handling', tackle:'Tackle', jackal:'Jackal', kick:'Kick',
   bd_att:'B/D Att', bd_def:'B/D Def', turnover:'Turnover Con', penalty:'Discipline', lineout:'Lineout', scrum:'Scrum' };
-function starsFromPct(pct){ if(pct==null) return null; if(pct<20) return 1; if(pct<40) return 2; if(pct<60) return 3; if(pct<80) return 4; return 5; }
+// Turnover Con / Discipline use a wider "average" band (10/20/40/20/10
+// instead of the flat 20% quintiles every other skill uses, 2026-09 user
+// request) -- these two are rare per-game counting stats where the raw
+// value differences within the broad middle of the pack are mostly noise,
+// so 3-star ("about average") deliberately covers a much bigger slice.
+const WIDE_BAND_SKILLS = new Set(['turnover', 'penalty']);
+function starsFromPct(pct, skillKey){
+  if (pct == null) return null;
+  if (WIDE_BAND_SKILLS.has(skillKey)) {
+    if (pct < 10) return 1; if (pct < 30) return 2; if (pct < 70) return 3; if (pct < 90) return 4; return 5;
+  }
+  if(pct<20) return 1; if(pct<40) return 2; if(pct<60) return 3; if(pct<80) return 4; return 5;
+}
 function calcAge(iso){
   if(!iso) return null;
   const d = new Date(iso), now = new Date();
@@ -247,7 +259,7 @@ function skillsFromRow(row) {
   const out = {};
   RATINGS.skillOrder.forEach((k, i) => {
     const s = row[i];
-    out[k] = s ? { value: s[0], percentile: s[1], peer_n: s[2], stars: starsFromPct(s[1]) } : null;
+    out[k] = s ? { value: s[0], percentile: s[1], peer_n: s[2], stars: starsFromPct(s[1], k) } : null;
   });
   return out;
 }
